@@ -38,5 +38,9 @@
                 "LaravelLangMonitor": "Jonasschen\\LaravelLangMonitor\\LaravelLangMonitorFacade"
             }
         }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.5",
+        "phpunit/phpunit": "^10.1"
     }
 }
