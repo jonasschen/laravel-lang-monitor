@@ -9,7 +9,7 @@
         "translation",
         "language",
         "lang",
-        "i18n",
+        "i18n"
     ],
     "type": "library",
     "homepage": "https://github.com/jonasschen/laravel-lang-monitor",
