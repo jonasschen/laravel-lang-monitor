@@ -24,6 +24,10 @@
         "ext-json": "*",
         "illuminate/support": "^8.0|^9.0|^10.0"
     },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
     "config": {
         "sort-packages": true
     },
