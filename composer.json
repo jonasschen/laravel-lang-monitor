@@ -3,7 +3,13 @@
     "description": "Search for untranslated keys in your Laravel project",
     "keywords": [
         "jonasschen",
-        "laravel-lang-monitor"
+        "laravel-lang-monitor",
+        "laravel-lang",
+        "lang-monitor",
+        "translation",
+        "language",
+        "lang",
+        "i18n",
     ],
     "type": "library",
     "homepage": "https://github.com/jonasschen/laravel-lang-monitor",
