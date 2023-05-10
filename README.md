@@ -12,7 +12,7 @@ Using Laravel Lang Monitor you can get all missing translations.
 
 You can install the package via composer:
 ```bash
-composer require jonasschen/laravel-lang-monitor
+composer require jonasschen/laravel-lang-monitor --dev
 ```
 
 Publish the config file using the artisan CLI tool:
@@ -59,26 +59,6 @@ This package supports booth @lang() and __() functions.
 
 ### Lang file format support
 This package supports .php files and .json files formats.
-
-### Running in github actions?
-```
-  translations:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-          extensions: mbstring, intl
-          ini-values: post_max_size=256M, max_execution_time=180
-          coverage: xdebug
-          tools: php-cs-fixer, phpunit
-      - name: Install Dependencies
-        run: composer install -q --no-interaction --no-scripts
-      - name: Run lang monitor
-        run: php artisan lang_monitor:scan
-```
 
 ### Changelog
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
