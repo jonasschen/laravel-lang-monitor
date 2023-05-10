@@ -13,6 +13,14 @@
             "Jonasschen\\LaravelLangMonitor\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Jonasschen\\LaravelLangMonitor\\Tests\\": "tests"
+        },
+        "classmap": [
+            "tests"
+        ]
+    },
     "authors": [
         {
             "name": "Jonas Schen",

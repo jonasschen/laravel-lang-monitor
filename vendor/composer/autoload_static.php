@@ -123,6 +123,7 @@ class ComposerStaticInit61f9dd9babbbbd77c680ef3ae4a4ab7e
         ),
         'J' => 
         array (
+            'Jonasschen\\LaravelLangMonitor\\Tests\\' => 36,
             'Jonasschen\\LaravelLangMonitor\\' => 30,
         ),
         'I' => 
@@ -394,6 +395,10 @@ class ComposerStaticInit61f9dd9babbbbd77c680ef3ae4a4ab7e
         array (
             0 => __DIR__ . '/..' . '/laravel/serializable-closure/src',
         ),
+        'Jonasschen\\LaravelLangMonitor\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests',
+        ),
         'Jonasschen\\LaravelLangMonitor\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
@@ -486,6 +491,7 @@ class ComposerStaticInit61f9dd9babbbbd77c680ef3ae4a4ab7e
     public static $classMap = array (
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'ExampleTest' => __DIR__ . '/../..' . '/tests/Tests/Unit/ExampleTest.php',
         'Hamcrest\\Arrays\\IsArray' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArray.php',
         'Hamcrest\\Arrays\\IsArrayContaining' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContaining.php',
         'Hamcrest\\Arrays\\IsArrayContainingInAnyOrder' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContainingInAnyOrder.php',
@@ -1722,6 +1728,8 @@ class ComposerStaticInit61f9dd9babbbbd77c680ef3ae4a4ab7e
         'SebastianBergmann\\Type\\VoidType' => __DIR__ . '/..' . '/sebastian/type/src/type/VoidType.php',
         'SebastianBergmann\\Version' => __DIR__ . '/..' . '/sebastian/version/src/Version.php',
         'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+        'Tests\\TestCase' => __DIR__ . '/../..' . '/tests/Tests/TestCase.php',
+        'Tests\\Unit\\Console\\Commands\\LangMonitorScanCommandTest' => __DIR__ . '/../..' . '/tests/Tests/Unit/Console/Commands/LangMonitorScanCommandTest.php',
         'TheSeer\\Tokenizer\\Exception' => __DIR__ . '/..' . '/theseer/tokenizer/src/Exception.php',
         'TheSeer\\Tokenizer\\NamespaceUri' => __DIR__ . '/..' . '/theseer/tokenizer/src/NamespaceUri.php',
         'TheSeer\\Tokenizer\\NamespaceUriException' => __DIR__ . '/..' . '/theseer/tokenizer/src/NamespaceUriException.php',
