@@ -86,7 +86,7 @@ class LangMonitorScanCommand extends Command
             }
         }
 
-        $wordsNotFound = [];
+        $keysNotFound = [];
         // Iterate over each file
         foreach ($files as $file) {
             // Read the contents of the file into an array of lines
@@ -94,38 +94,38 @@ class LangMonitorScanCommand extends Command
 
             // Iterate over each search pattern
             foreach ($patterns as $pattern) {
-                // Search for words with the current search pattern in each line of the file
+                // Search for keys with the current search pattern in each line of the file
                 foreach ($lines as $line) {
                     preg_match_all($pattern, $line, $matches);
 
-                    // Iterate over each word found
+                    // Iterate over each key found
                     foreach ($matches[1] as $match) {
                         // Check if the key has already been found in the JSON file before searching for it
                         if (!isset($jsonData[$match])) {
-                            $wordsNotFound[] = $match;
-                            $this->line("Word not found: [{$match}] - Used in file [{$file}]");
+                            $keysNotFound[] = $match;
+                            $this->line("Key not found: [{$match}] - Used in file [{$file}]");
                         }
                     }
                 }
             }
         }
 
-        if (count($wordsNotFound) == 0) {
+        if (count($keysNotFound) == 0) {
             $this->info("Great! All translations are working fine.\n");
         } else {
-            $wordsNotFoundUnique = array_unique($wordsNotFound);
+            $keysNotFoundUnique = array_unique($keysNotFound);
 
             $this->alert(
-                "Untranslated words: " . count($wordsNotFound) . " | " .
-                "Unique words: " . count($wordsNotFoundUnique)
+                "Untranslated keys: " . count($keysNotFound) . " | " .
+                "Unique keys: " . count($keysNotFoundUnique)
             );
-            $wordsNotFoundUnique = $this->sortArray($wordsNotFoundUnique);
+            $keysNotFoundUnique = $this->sortArray($keysNotFoundUnique);
             if ($exportJsonFile) {
-                $this->exportJsonFile($exportJsonFile, $wordsNotFoundUnique);
+                $this->exportJsonFile($exportJsonFile, $keysNotFoundUnique);
             }
 
             if ($exportPhpFile) {
-                $this->exportPhpFile($exportPhpFile, $wordsNotFoundUnique);
+                $this->exportPhpFile($exportPhpFile, $keysNotFoundUnique);
             }
         }
 
@@ -145,44 +145,44 @@ class LangMonitorScanCommand extends Command
 
     /**
      * @param string $exportJsonFile
-     * @param array $wordsNotFound
+     * @param array $keysNotFound
      * @return void
      */
-    private function exportJsonFile(string $exportJsonFile, array $wordsNotFound): void
+    private function exportJsonFile(string $exportJsonFile, array $keysNotFound): void
     {
         $myFile = fopen($exportJsonFile, "w") or die("Unable to open JSON file!");
         fwrite($myFile, "{\n");
         $ifFirst = true;
-        foreach ($wordsNotFound as $word) {
+        foreach ($keysNotFound as $key) {
             if (!$ifFirst) {
                 fwrite($myFile, ",\n");
             }
-            $line = sprintf("    \"%s\": \"\"", $word);
+            $line = sprintf("    \"%s\": \"\"", $key);
             fwrite($myFile, $line);
             $ifFirst = false;
         }
         fwrite($myFile, "\n}\n");
         fclose($myFile);
 
-        $this->info("Untranslated words exported to [{$exportJsonFile}] as JSON file.\n");
+        $this->info("Untranslated keys exported to [{$exportJsonFile}] as JSON file.\n");
     }
 
     /**
      * @param string $exportPhpFile
-     * @param array $wordsNotFound
+     * @param array $keysNotFound
      * @return void
      */
-    private function exportPhpFile(string $exportPhpFile, array $wordsNotFound): void
+    private function exportPhpFile(string $exportPhpFile, array $keysNotFound): void
     {
         $myFile = fopen($exportPhpFile, "w") or die("Unable to open PHP file!");
         fwrite($myFile, "<?php\n\nreturn [\n");
-        foreach ($wordsNotFound as $word) {
-            $line = sprintf("    '%s' => '',\n", $word);
+        foreach ($keysNotFound as $key) {
+            $line = sprintf("    '%s' => '',\n", $key);
             fwrite($myFile, $line);
         }
         fwrite($myFile, "];\n");
         fclose($myFile);
 
-        $this->info("Untranslated words exported to [{$exportPhpFile}] as PHP file.\n");
+        $this->info("Untranslated keys exported to [{$exportPhpFile}] as PHP file.\n");
     }
 }

@@ -5,7 +5,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/jonasschen/laravel-lang-monitor.svg?style=flat-square)](https://packagist.org/packages/jonasschen/laravel-lang-monitor)
 ![GitHub Actions](https://github.com/jonasschen/laravel-lang-monitor/actions/workflows/main.yml/badge.svg)
 
-Automatically search for words or phrases in your project that have no translations.
+Automatically search for keys or phrases in your project that have no translations.
 
 Using Laravel Lang Monitor you can get all missing translations.
 ## Installation
@@ -28,10 +28,10 @@ php artisan lang_monitor:scan
 
 ### Output example with missing translations
 ```
-Word not found: [Nova senha] - Used in file [resources/views/auth/changepassword.blade.php]
-Word not found: [Confirmar senha] - Used in file [resources/views/auth/changepassword.blade.php]
+Key not found: [Nova senha] - Used in file [resources/views/auth/changepassword.blade.php]
+Key not found: [Confirmar senha] - Used in file [resources/views/auth/changepassword.blade.php]
 ********************************************************
-*       Untranslated words: 2 | Unique words: 2        *
+*       Untranslated keys: 2 | Unique keys: 2        *
 ********************************************************
 ```
 

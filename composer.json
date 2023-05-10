@@ -1,6 +1,6 @@
 {
     "name": "jonasschen/laravel-lang-monitor",
-    "description": "Search for untranslated words in your Laravel project",
+    "description": "Search for untranslated keys in your Laravel project",
     "keywords": [
         "jonasschen",
         "laravel-lang-monitor"
