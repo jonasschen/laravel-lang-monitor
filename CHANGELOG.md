@@ -2,6 +2,11 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 0.0.6 - 2023-05-10
+
+-   Removed duplicated pattern
+-   Test implementation
+
 ## 0.0.5 - 2023-05-10
 
 -   First stable version
