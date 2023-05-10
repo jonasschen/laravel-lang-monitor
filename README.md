@@ -11,9 +11,13 @@ Using Laravel Lang Monitor you can get all missing translations.
 ## Installation
 
 You can install the package via composer:
-
 ```bash
 composer require jonasschen/laravel-lang-monitor
+```
+
+Publish the config file using the artisan CLI tool:
+```bash
+php artisan vendor:publish --provider="Jonasschen\LaravelLangMonitor\LaravelLangMonitorServiceProvider"
 ```
 
 ## Usage
