@@ -18,7 +18,6 @@ class LangMonitorScanCommand extends Command
         // Define the search patterns
         $patterns = [
             '/@lang\([\'"]([^\'"]+)[\'"]\)/',
-            '/@lang\([\'"]([^\'"]+)[\'"]\)/',
             '/__\([\'"]([^\'"]+)[\'"]\)/',
         ];
 
