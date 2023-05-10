@@ -1,11 +1,16 @@
 {
     "name": "jonasschen/laravel-lang-monitor",
     "description": "Search for untranslated words in your Laravel project",
+    "keywords": [
+        "jonasschen",
+        "laravel-lang-monitor"
+    ],
     "type": "library",
+    "homepage": "https://github.com/jonasschen/laravel-lang-monitor",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Jonasschen\\LaravelLangMonitor\\": "src/"
+            "Jonasschen\\LaravelLangMonitor\\": "src"
         }
     },
     "authors": [
@@ -14,5 +19,24 @@
             "email": "jonasschen@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "php": "^8.1",
+        "ext-json": "*",
+        "illuminate/support": "^8.0|^9.0|^10.0"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev-main",
+    "prefer-stable" : true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jonasschen\\LaravelLangMonitor\\LaravelLangMonitorServiceProvider"
+            ],
+            "aliases": {
+                "LaravelLangMonitor": "Jonasschen\\LaravelLangMonitor\\LaravelLangMonitorFacade"
+            }
+        }
+    }
 }
