@@ -2,6 +2,11 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 0.0.7 - 2023-05-12
+
+-   Line number added where key was found
+-   Missing directories and lang files alerts have been moved to the end of the report
+
 ## 0.0.6 - 2023-05-10
 
 -   Removed duplicated pattern

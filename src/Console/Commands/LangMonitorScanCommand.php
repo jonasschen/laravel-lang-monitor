@@ -32,6 +32,8 @@ class LangMonitorScanCommand extends Command
 
         $exportJsonFile = $this->option('export_json_file') ?: null;
         $exportPhpFile = $this->option('export_php_file') ?: null;
+        $missingDirectoriesToSearch = [];
+        $missingLangFiles = [];
 
         // Check if all directories exist, exit with error message if not
         foreach ($directoriesToSearch as $directory) {
@@ -40,7 +42,7 @@ class LangMonitorScanCommand extends Command
                     $this->error("Directory [$directory] does not exist.");
                     return 1;
                 } else {
-                    $this->alert("Directory [$directory] does not exist and it was ignored.");
+                    $missingDirectoriesToSearch[] = $directory;
                 }
             }
         }
@@ -52,7 +54,7 @@ class LangMonitorScanCommand extends Command
                     $this->error("Lang file [$langFile] does not exist.");
                     return 1;
                 } else {
-                    $this->alert("Lang file [$langFile] does not exist and it was ignored.");
+                    $missingLangFiles[] = $langFile;
                 }
             }
         }
@@ -94,7 +96,9 @@ class LangMonitorScanCommand extends Command
             // Iterate over each search pattern
             foreach ($patterns as $pattern) {
                 // Search for keys with the current search pattern in each line of the file
+                $lineNumber = 0;
                 foreach ($lines as $line) {
+                    $lineNumber++;
                     preg_match_all($pattern, $line, $matches);
 
                     // Iterate over each key found
@@ -102,7 +106,7 @@ class LangMonitorScanCommand extends Command
                         // Check if the key has already been found in the JSON file before searching for it
                         if (!isset($jsonData[$match])) {
                             $keysNotFound[] = $match;
-                            $this->line("Key not found: [{$match}] - Used in file [{$file}]");
+                            $this->line("Key not found: [{$match}] - Used in file [{$file}:{$lineNumber}]");
                         }
                     }
                 }
@@ -112,6 +116,18 @@ class LangMonitorScanCommand extends Command
         if (count($keysNotFound) == 0) {
             $this->info("Great! All translations are working fine.\n");
         } else {
+            if ($missingDirectoriesToSearch) {
+                foreach ($missingDirectoriesToSearch as $directory) {
+                    $this->alert("Directory [$directory] does not exist and it was ignored.");
+                }
+            }
+
+            if ($missingLangFiles) {
+                foreach ($missingLangFiles as $langFile) {
+                    $this->alert("Lang file [$langFile] does not exist and it was ignored.");
+                }
+            }
+
             $keysNotFoundUnique = array_unique($keysNotFound);
 
             $this->alert(
