@@ -80,3 +80,8 @@ If you discover any security-related issues, please email jonasschen@gmail.com i
 
 ## License
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+
+![btc](https://github.com/jonasschen/laravel-lang-monitor/assets/31046817/2f69a4aa-4ee2-442e-aa1f-4a1c0cde217c)
+
+![eth](https://github.com/jonasschen/laravel-lang-monitor/assets/31046817/41ca0d2f-e120-4733-a96b-ff7a34e1e4de)
