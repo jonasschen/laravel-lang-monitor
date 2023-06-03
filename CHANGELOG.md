@@ -2,6 +2,11 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 1.0.0 - 2023-06-03
+
+-   Added support to trans() function
+-   Stable version v1
+
 ## 0.0.7 - 2023-05-12
 
 -   Line number added where key was found

@@ -11,13 +11,14 @@ class LangMonitorScanCommand extends Command
 {
     protected $signature = 'lang_monitor:scan {--export_json_file= : The filename where you wish to export the JSON file} {--export_php_file= : The filename where you wish to export the PHP file}';
 
-    protected $description = 'Searches for all @lang() and __() keys in all configured files and check if them exists in the configured lang files.';
+    protected $description = 'Searches for all @lang(), __() and trans() keys in all configured files and check if them exists in the configured lang files.';
 
     public function handle()
     {
         // Define the search patterns
         $patterns = [
             '/@lang\([\'"]([^\'"]+)[\'"]\)/',
+            '/trans\([\'"]([^\'"]+)[\'"]\)/',
             '/__\([\'"]([^\'"]+)[\'"]\)/',
         ];
 
