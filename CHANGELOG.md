@@ -2,6 +2,10 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 1.0.1 - 2023-11-27
+
+-   Added CS-Fixer to project
+
 ## 1.0.0 - 2023-06-03
 
 -   Added support to trans() function
