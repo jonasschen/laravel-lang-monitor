@@ -75,4 +75,8 @@ return [
     |
     */
     'locale' => 'en.utf8',
+
+    'chat_gpt' => [
+        'api_key' => '',
+    ],
 ];

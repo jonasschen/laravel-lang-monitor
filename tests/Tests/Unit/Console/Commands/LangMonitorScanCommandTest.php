@@ -2,12 +2,16 @@
 
 namespace Tests\Unit\Console\Commands;
 
-use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 final class LangMonitorScanCommandTest extends TestCase
 {
-    public function test_it_scan()
+    public function testItScan()
     {
         $command = $this->artisan('lang_monitor:scan');
         $command->assertExitCode(0);

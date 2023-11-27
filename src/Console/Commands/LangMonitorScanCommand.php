@@ -13,7 +13,7 @@ class LangMonitorScanCommand extends Command
 
     protected $description = 'Searches for all @lang(), __() and trans() keys in all configured files and check if them exists in the configured lang files.';
 
-    public function handle()
+    public function handle(): int
     {
         // Define the search patterns
         $patterns = [
@@ -40,11 +40,11 @@ class LangMonitorScanCommand extends Command
         foreach ($directoriesToSearch as $directory) {
             if (!file_exists($directory)) {
                 if ($abortIfDirectoryDoesntExists) {
-                    $this->error("Directory [$directory] does not exist.");
+                    $this->error("Directory [{$directory}] does not exist.");
+
                     return 1;
-                } else {
-                    $missingDirectoriesToSearch[] = $directory;
                 }
+                $missingDirectoriesToSearch[] = $directory;
             }
         }
 
@@ -52,16 +52,16 @@ class LangMonitorScanCommand extends Command
         foreach ($langFiles as $langFile) {
             if (!file_exists($langFile)) {
                 if ($abortIfLangFileDoesntExists) {
-                    $this->error("Lang file [$langFile] does not exist.");
+                    $this->error("Lang file [{$langFile}] does not exist.");
+
                     return 1;
-                } else {
-                    $missingLangFiles[] = $langFile;
                 }
+                $missingLangFiles[] = $langFile;
             }
         }
 
         // Get a list of all files in the directories and subdirectories
-        $files = array();
+        $files = [];
         $extensionsToSearch = implode('|', $extensionsToSearch);
         foreach ($directoriesToSearch as $directory) {
             if (file_exists($directory)) {
@@ -75,13 +75,13 @@ class LangMonitorScanCommand extends Command
         }
 
         // Read the contents of the JSON files and convert to associative arrays
-        $jsonData = array();
+        $jsonData = [];
         foreach ($langFiles as $langFile) {
             if (file_exists($langFile)) {
                 if (Str::endsWith($langFile, '.json')) {
                     $json = json_decode(file_get_contents($langFile), true);
                 } else {
-                    $json = include($langFile);
+                    $json = include $langFile;
                 }
 
                 $jsonData = array_merge($jsonData, $json);
@@ -114,26 +114,26 @@ class LangMonitorScanCommand extends Command
             }
         }
 
-        if (count($keysNotFound) == 0) {
+        if (0 == count($keysNotFound)) {
             $this->info("Great! All translations are working fine.\n");
         } else {
             if ($missingDirectoriesToSearch) {
                 foreach ($missingDirectoriesToSearch as $directory) {
-                    $this->alert("Directory [$directory] does not exist and it was ignored.");
+                    $this->alert("Directory [{$directory}] does not exist and it was ignored.");
                 }
             }
 
             if ($missingLangFiles) {
                 foreach ($missingLangFiles as $langFile) {
-                    $this->alert("Lang file [$langFile] does not exist and it was ignored.");
+                    $this->alert("Lang file [{$langFile}] does not exist and it was ignored.");
                 }
             }
 
             $keysNotFoundUnique = array_unique($keysNotFound);
 
             $this->alert(
-                "Untranslated keys: " . count($keysNotFound) . " | " .
-                "Unique keys: " . count($keysNotFoundUnique)
+                'Untranslated keys: ' . count($keysNotFound) . ' | ' .
+                'Unique keys: ' . count($keysNotFoundUnique),
             );
             $keysNotFoundUnique = $this->sortArray($keysNotFoundUnique);
             if ($exportJsonFile) {
@@ -148,32 +148,24 @@ class LangMonitorScanCommand extends Command
         return 0;
     }
 
-    /**
-     * @param $array
-     * @return array
-     */
-    private function sortArray($array): array
+    private function sortArray(array $array): array
     {
         setlocale(LC_ALL, config('lang-monitor.locale', ''));
         asort($array, SORT_LOCALE_STRING);
+
         return $array;
     }
 
-    /**
-     * @param string $exportJsonFile
-     * @param array $keysNotFound
-     * @return void
-     */
     private function exportJsonFile(string $exportJsonFile, array $keysNotFound): void
     {
-        $myFile = fopen($exportJsonFile, "w") or die("Unable to open JSON file!");
+        $myFile = fopen($exportJsonFile, 'w') or exit('Unable to open JSON file!');
         fwrite($myFile, "{\n");
         $ifFirst = true;
         foreach ($keysNotFound as $key) {
             if (!$ifFirst) {
                 fwrite($myFile, ",\n");
             }
-            $line = sprintf("    \"%s\": \"\"", $key);
+            $line = sprintf('    "%s": ""', $key);
             fwrite($myFile, $line);
             $ifFirst = false;
         }
@@ -183,14 +175,9 @@ class LangMonitorScanCommand extends Command
         $this->info("Untranslated keys exported to [{$exportJsonFile}] as JSON file.\n");
     }
 
-    /**
-     * @param string $exportPhpFile
-     * @param array $keysNotFound
-     * @return void
-     */
     private function exportPhpFile(string $exportPhpFile, array $keysNotFound): void
     {
-        $myFile = fopen($exportPhpFile, "w") or die("Unable to open PHP file!");
+        $myFile = fopen($exportPhpFile, 'w') or exit('Unable to open PHP file!');
         fwrite($myFile, "<?php\n\nreturn [\n");
         foreach ($keysNotFound as $key) {
             $line = sprintf("    '%s' => '',\n", $key);

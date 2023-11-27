@@ -14,7 +14,7 @@ class LaravelLangMonitorServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('lang-monitor.php'),
+                __DIR__ . '/../config/config.php' => config_path('lang-monitor.php'),
             ], 'config');
 
             // Registering package commands.
@@ -30,11 +30,11 @@ class LaravelLangMonitorServiceProvider extends ServiceProvider
     public function register()
     {
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'lang-monitor');
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'lang-monitor');
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-lang-monitor', function () {
-            return new LaravelLangMonitor;
+            return new LaravelLangMonitor();
         });
     }
 }

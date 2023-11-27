@@ -6,6 +6,11 @@ namespace Tests;
 
 use Jonasschen\LaravelLangMonitor\LaravelLangMonitorServiceProvider;
 
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 class TestCase extends \Orchestra\Testbench\TestCase
 {
     public function setUp(): void
