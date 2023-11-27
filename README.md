@@ -69,7 +69,7 @@ php artisan lang_monitor:scan --export_php_file=storage/logs/untranslateds.php
 ```
 
 ### Translation function support
-This package supports booth @lang(), __() and trans() functions.
+This package supports @lang(), __() and trans() functions.
 
 ### Lang file format support
 This package supports .php files and .json files formats.
