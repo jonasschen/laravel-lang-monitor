@@ -2,6 +2,12 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 2.1.0 - 2024-07-19
+
+-   Code refactoring
+-   Improve location for keys with breaklines
+-   Added scan for unused translations
+
 ## 1.1.0 - 2024-05-24
 
 -   Release to Laravel 11
