@@ -2,6 +2,13 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 2.1.0 - 2024-07-22
+
+-   New configuration property: scan_for_unused_translations
+-   New report screen
+-   New option to export unused keys
+-   New export file type: (text)
+
 ## 2.0.1 - 2024-07-19
 
 -   Code refactoring

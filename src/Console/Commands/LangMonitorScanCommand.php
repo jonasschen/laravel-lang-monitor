@@ -18,7 +18,7 @@ class LangMonitorScanCommand extends Command
         "/__\((['\"])(.*?)\\1/",
     ];
 
-    protected $signature = 'lang_monitor:scan {--export_json_file= : The filename where you wish to export the JSON file} {--export_php_file= : The filename where you wish to export the PHP file}';
+    protected $signature = 'lang_monitor:scan {--export_json_file= : [DEPRECATED] Equal to export_missed_json_file. Keep for compatibility} {--export_php_file= : [DEPRECATED] Equal to export_missed_php_file. Keep for compatibility} {--export_missed_json_file= : The filename where you wish to export the JSON file with missed translations} {--export_missed_php_file= : The filename where you wish to export the PHP file with missed translations} {--export_missed_txt_file= : The filename where you wish to export the text file with missed translations} {--export_unused_json_file= : The filename where you wish to export the JSON file with unused keys} {--export_unused_php_file= : The filename where you wish to export the PHP file with unused keys} {--export_unused_txt_file= : The filename where you wish to export the text file with unused keys}';
 
     protected $description = 'Searches for all @lang(), __() and trans() keys in all configured files and check if them exists in the configured lang files.';
     private array $directoriesToSearch;
@@ -29,21 +29,39 @@ class LangMonitorScanCommand extends Command
     private bool $abortIfDirectoryDoesntExists;
     private bool $abortIfLangFileDoesntExists;
     private int $totalKeys;
+    private ?string $exportMissedJsonFile;
+    private ?string $exportMissedPhpFile;
+    private ?string $exportMissedTxtFile;
+    private ?string $exportUnusedJsonFile;
+    private ?string $exportUnusedPhpFile;
+    private ?string $exportUnusedTxtFile;
 
     public function loadConfigs(): void
     {
+        // Get the directories and JSON files from the arguments
         $this->directoriesToSearch = config('lang-monitor.directories_to_search', []);
         $this->extensionsToSearch = config('lang-monitor.extensions_to_search', []);
         $this->langFiles = config('lang-monitor.lang_files', []);
         $this->abortIfDirectoryDoesntExists = config('lang-monitor.abort_if_directory_doesnt_exists', false);
         $this->abortIfLangFileDoesntExists = config('lang-monitor.abort_if_lang_file_doesnt_exists', false);
+
+        $this->exportMissedJsonFile = $this->option('export_json_file') ?: null;
+        if (!$this->exportMissedJsonFile) {
+            $this->exportMissedJsonFile = $this->option('export_missed_json_file') ?: null;
+        }
+        $this->exportMissedPhpFile = $this->option('export_php_file') ?: null;
+        if (!$this->exportMissedPhpFile) {
+            $this->exportMissedPhpFile = $this->option('export_missed_php_file') ?: null;
+        }
+        $this->exportMissedTxtFile = $this->option('export_missed_txt_file') ?: null;
+
+        $this->exportUnusedJsonFile = $this->option('export_unused_json_file') ?: null;
+        $this->exportUnusedPhpFile = $this->option('export_unused_php_file') ?: null;
+        $this->exportUnusedTxtFile = $this->option('export_unused_txt_file') ?: null;
     }
 
     public function handle(): int
     {
-        // Get the directories and JSON files from the arguments
-        $exportJsonFile = $this->option('export_json_file') ?: null;
-        $exportPhpFile = $this->option('export_php_file') ?: null;
         $this->loadConfigs();
         $this->getCodeFiles();
         $this->getTranslationsData();
@@ -81,15 +99,7 @@ class LangMonitorScanCommand extends Command
             $keysNotFoundUnique = array_unique($keysNotFound);
 
             $this->printReport(count($keysNotFound), count($keysNotFoundUnique), count($unusedTranslations));
-
-            $keysNotFoundUnique = $this->sortArray($keysNotFoundUnique);
-            if ($exportJsonFile) {
-                $this->exportJsonFile($exportJsonFile, $keysNotFoundUnique);
-            }
-
-            if ($exportPhpFile) {
-                $this->exportPhpFile($exportPhpFile, $keysNotFoundUnique);
-            }
+            $this->exportFiles($keysNotFoundUnique, $unusedTranslations);
         }
 
         $this->drawFlag();
@@ -104,37 +114,139 @@ class LangMonitorScanCommand extends Command
         return $array;
     }
 
-    private function exportJsonFile(string $exportJsonFile, array $keysNotFound): void
+    private function sortArrayMulti(array $array): array
     {
-        $myFile = fopen($exportJsonFile, 'w') or exit('Unable to open JSON file!');
-        fwrite($myFile, "{\n");
-        $ifFirst = true;
-        foreach ($keysNotFound as $key) {
-            if (!$ifFirst) {
-                fwrite($myFile, ",\n");
-            }
-            $line = sprintf('    "%s": ""', $key);
-            fwrite($myFile, $line);
-            $ifFirst = false;
-        }
-        fwrite($myFile, "\n}\n");
-        fclose($myFile);
+        setlocale(LC_ALL, config('lang-monitor.locale', ''));
 
-        $this->info("Untranslated keys exported to [{$exportJsonFile}] as JSON file.\n");
+        usort($array, function($a, $b) {
+            return strcmp($a['key'], $b['key']);
+        });
+
+        return $array;
     }
 
-    private function exportPhpFile(string $exportPhpFile, array $keysNotFound): void
+    private function exportFiles(array $keysNotFoundUnique, array $unusedTranslations): void
     {
-        $myFile = fopen($exportPhpFile, 'w') or exit('Unable to open PHP file!');
-        fwrite($myFile, "<?php\n\nreturn [\n");
-        foreach ($keysNotFound as $key) {
-            $line = sprintf("    '%s' => '',\n", $key);
-            fwrite($myFile, $line);
-        }
-        fwrite($myFile, "];\n");
-        fclose($myFile);
+        $this->exportMissedFiles($keysNotFoundUnique);
+        $this->exportUnusedFiles($unusedTranslations);
+    }
 
-        $this->info("Untranslated keys exported to [{$exportPhpFile}] as PHP file.\n");
+    private function exportMissedFiles(array $keysNotFoundUnique): void
+    {
+        $keysNotFoundUnique = $this->sortArray($keysNotFoundUnique);
+        $this->exportMissedJsonFile($keysNotFoundUnique);
+        $this->exportMissedPhpFile($keysNotFoundUnique);
+        $this->exportMissedTxtFile($keysNotFoundUnique);
+    }
+
+    private function exportUnusedFiles(array $unusedTranslations): void
+    {
+        $unusedTranslations = $this->sortArrayMulti($unusedTranslations);
+        $this->exportUnusedJsonFile($unusedTranslations);
+        $this->exportUnusedPhpFile($unusedTranslations);
+        $this->exportUnusedTxtFile($unusedTranslations);
+    }
+
+    private function exportMissedJsonFile(array $keysNotFound): void
+    {
+        if ($this->exportMissedJsonFile) {
+            $myFile = fopen($this->exportMissedJsonFile, 'w') or exit('Unable to open JSON file!');
+            fwrite($myFile, "{\n");
+            $ifFirst = true;
+            foreach ($keysNotFound as $key) {
+                if (!$ifFirst) {
+                    fwrite($myFile, ",\n");
+                }
+                $line = sprintf('    "%s": ""', $key);
+                fwrite($myFile, $line);
+                $ifFirst = false;
+            }
+            fwrite($myFile, "\n}\n");
+            fclose($myFile);
+
+            $this->info("Untranslated keys exported to [{$this->exportMissedJsonFile}] as JSON file.\n");
+        }
+    }
+
+    private function exportUnusedJsonFile(array $unusedKeys): void
+    {
+        if ($this->exportUnusedJsonFile) {
+            $myFile = fopen($this->exportUnusedJsonFile, 'w') or exit('Unable to open JSON file!');
+            fwrite($myFile, "{\n");
+            $ifFirst = true;
+            foreach ($unusedKeys as $key) {
+                if (!$ifFirst) {
+                    fwrite($myFile, ",\n");
+                }
+                $line = sprintf('    "%s": "FILE: %s"', $key['key'], $key['file']);
+                fwrite($myFile, $line);
+                $ifFirst = false;
+            }
+            fwrite($myFile, "\n}\n");
+            fclose($myFile);
+
+            $this->info("Unused keys exported to [{$this->exportUnusedJsonFile}] as JSON file.\n");
+        }
+    }
+
+    private function exportMissedPhpFile(array $keysNotFound): void
+    {
+        if ($this->exportMissedPhpFile) {
+            $myFile = fopen($this->exportMissedPhpFile, 'w') or exit('Unable to open PHP file!');
+            fwrite($myFile, "<?php\n\nreturn [\n");
+            foreach ($keysNotFound as $key) {
+                $line = sprintf("    '%s' => '',\n", $key);
+                fwrite($myFile, $line);
+            }
+            fwrite($myFile, "];\n");
+            fclose($myFile);
+
+            $this->info("Untranslated keys exported to [{$this->exportMissedPhpFile}] as PHP file.\n");
+        }
+    }
+
+    private function exportUnusedPhpFile(array $unusedKeys): void
+    {
+        if ($this->exportUnusedPhpFile) {
+            $myFile = fopen($this->exportUnusedPhpFile, 'w') or exit('Unable to open PHP file!');
+            fwrite($myFile, "<?php\n\nreturn [\n");
+            foreach ($unusedKeys as $key) {
+                $line = sprintf("    '%s' => 'FILE: %s',\n", $key['key'], $key['file']);
+                fwrite($myFile, $line);
+            }
+            fwrite($myFile, "];\n");
+            fclose($myFile);
+
+            $this->info("Untranslated keys exported to [{$this->exportUnusedPhpFile}] as PHP file.\n");
+        }
+    }
+
+    private function exportMissedTxtFile(array $keysNotFound): void
+    {
+        if ($this->exportMissedTxtFile) {
+            $myFile = fopen($this->exportMissedTxtFile, 'w') or exit('Unable to open text file!');
+            foreach ($keysNotFound as $key) {
+                $line = sprintf("%s\n", $key);
+                fwrite($myFile, $line);
+            }
+            fclose($myFile);
+
+            $this->info("Untranslated keys exported to [{$this->exportMissedTxtFile}] as text file.\n");
+        }
+    }
+
+    private function exportUnusedTxtFile(array $unusedKeys): void
+    {
+        if ($this->exportUnusedTxtFile) {
+            $myFile = fopen($this->exportUnusedTxtFile, 'w') or exit('Unable to open text file!');
+            foreach ($unusedKeys as $key) {
+                $line = sprintf("%s -> FILE: %s\n", $key['key'], $key['file']);
+                fwrite($myFile, $line);
+            }
+            fclose($myFile);
+
+            $this->info("Untranslated keys exported to [{$this->exportUnusedTxtFile}] as text file.\n");
+        }
     }
 
     /**
@@ -244,8 +356,16 @@ class LangMonitorScanCommand extends Command
 
                     // Iterate over each key found
                     foreach ($matches[2] as $match) {
-                        // Check if the key has already been found in the JSON file before searching for it
-                        if (!isset($this->translationsData['data'][$match])) {
+                        $found = false;
+                        foreach ($this->translationsData as $translationData) {
+                            // Check if the key has already been found in the JSON file before searching for it
+                            if (isset($translationData['data'][$match])) {
+                                $found = true;
+                                break;
+                            }
+                        }
+
+                        if (!$found) {
                             $keysNotFound[] = $match;
                             $this->line("Key not found: [{$match}] - Used in file [{$file}:{$lineNumber}]");
                         }

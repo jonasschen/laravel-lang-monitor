@@ -25,6 +25,8 @@ php artisan vendor:publish --provider="Jonasschen\LaravelLangMonitor\LaravelLang
     - Abort if directory doesn't exists: If any of the configured directories of the "directories_to_search" array does not exist, the scanning process will be aborted, otherwise only an alert it will be logged an in the console;
 - abort_if_lang_file_doesnt_exists (Default: false)
     - Abort if lang file doesn't exists: If any of the configured lang files of the "lang_files" array does not exist, the scanning process will be aborted, otherwise only an alert it will be logged an in the console;
+- scan_for_unused_translations (Default: true)
+    - If enabled, will check if all key translations are in use and log unused keys
 - directories_to_search (Default: ['app', 'resources/views'])
     - Directories to search: A list of directories where the package will perform the scanning process;
 - extensions_to_search (Default: ['php', 'js'])
@@ -44,9 +46,15 @@ php artisan lang_monitor:scan
 ```
 Key not found: [Nova senha] - Used in file [resources/views/auth/changepassword.blade.php:20]
 Key not found: [Confirmar senha] - Used in file [resources/views/auth/changepassword.blade.php:22]
-********************************************************
-*       Untranslated keys: 2 | Unique keys: 2        *
-********************************************************
+****************************************
+*      LARAVEL LANG MONITOR REPORT     *
+****************************************
+* Found keys: 13564                    *
+* Untranslated keys: 37                *
+* Unique untranslated keys: 30         *
+* Unused translations: 1474            *
+****************************************
+
 ```
 
 ### Output example without missing translations
@@ -57,15 +65,39 @@ Key not found: [Confirmar senha] - Used in file [resources/views/auth/changepass
 ```
 
 ### Export untranslated keys to JSON file format
-You can export missing translations result for a file in a JSON format. use the --export_json_file option like this:
+You can export missing translations result for a file in a JSON format. use the --export_missed_json_file option like this:
 ```php
-php artisan lang_monitor:scan --export_json_file=storage/logs/untranslateds.json
+php artisan lang_monitor:scan --export_missed_json_file=storage/logs/untranslateds.json
 ```
 
 ### Export untranslated keys to PHP file format
-You can export missing translations result for a file in a PHP format. use the --export_php_file option like this:
+You can export missing translations result for a file in a PHP format. use the --export_missed_php_file option like this:
 ```php
-php artisan lang_monitor:scan --export_php_file=storage/logs/untranslateds.php
+php artisan lang_monitor:scan --export_missed_php_file=storage/logs/untranslateds.php
+```
+
+### Export untranslated keys to text file format
+You can export missing translations result for a file in a text format. use the --export_missed_text_file option like this:
+```php
+php artisan lang_monitor:scan --export_missed_txt_file=storage/logs/untranslateds.txt
+```
+
+### Export unused keys to JSON file format
+You can export unused keys result for a file in a JSON format. use the --export_unused_json_file option like this:
+```php
+php artisan lang_monitor:scan --export_unused_json_file=storage/logs/unuseds.json
+```
+
+### Export unused keys to PHP file format
+You can export unused keys result for a file in a PHP format. use the --export_unused_php_file option like this:
+```php
+php artisan lang_monitor:scan --export_unused_php_file=storage/logs/unuseds.php
+```
+
+### Export unused keys to text file format
+You can export unused keys result for a file in a text format. use the --export_unused_text_file option like this:
+```php
+php artisan lang_monitor:scan --export_unused_txt_file=storage/logs/unuseds.txt
 ```
 
 ### Translation function support
