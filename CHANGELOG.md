@@ -2,6 +2,11 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 2.2.0 - 2025-03-05
+
+-   Laravel updated to version 11.44.1
+-   PHP updated to version 8.3
+ 
 ## 2.1.0 - 2024-07-22
 
 -   New configuration property: scan_for_unused_translations

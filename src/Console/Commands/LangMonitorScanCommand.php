@@ -102,7 +102,7 @@ class LangMonitorScanCommand extends Command
             $this->exportFiles($keysNotFoundUnique, $unusedTranslations);
         }
 
-        $this->drawFlag();
+        //$this->drawFlag();
         return 0;
     }
 
