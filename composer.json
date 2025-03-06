@@ -35,7 +35,8 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
+        "laravel/framework": "11.44.1",
         "ext-json": "*"
     },
     "require-dev": {
