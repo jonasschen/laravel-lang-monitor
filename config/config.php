@@ -86,4 +86,8 @@ return [
     |
     */
     'locale' => 'en.utf8',
+
+    'middleware' => ['web'], // ajuste conforme necessidade
+    'prefix' => 'lang-monitor', // URL base
+    'locales' => ['en', 'pt-BR'], // colunas padrão na UI
 ];
