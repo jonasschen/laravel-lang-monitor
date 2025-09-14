@@ -6,9 +6,9 @@ return [
     | Abort if directory doesn't exists
     |--------------------------------------------------------------------------
     |
-    | If any of the configured directories of the "directories_to_search" array
-    | does not exist, the scanning process will be aborted, otherwise only an
-    | alert it will be logged an in the console
+    | If any configured directories of the "directories_to_search" array
+    | do not exist, the scanning process will be aborted, otherwise only an
+    | alert it will be logged in the console
     |
     */
     'abort_if_directory_doesnt_exists' => false,
@@ -18,9 +18,9 @@ return [
     | Abort if lang file doesn't exists
     |--------------------------------------------------------------------------
     |
-    | If any of the configured lang files of the "lang_files" array does not
-    | exist, the scanning process will be aborted, otherwise only an alert it
-    | will be logged an in the console
+    | If any configured lang files of the "lang_files" array do not exist,
+    | the scanning process will be aborted, otherwise only an alert it
+    | will be logged in the console
     |
     */
     'abort_if_lang_file_doesnt_exists' => false,
@@ -81,13 +81,29 @@ return [
     | Locale
     |--------------------------------------------------------------------------
     |
-    | The locale of main project language. It will be used to perform a
-    | improved sorting of the untranslated keys when exporting result
+    | The locale of the main project language. It will be used to perform a
+    | improved sorting of the untranslated keys when exporting a result
     |
     */
     'locale' => 'en.utf8',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware
+    |--------------------------------------------------------------------------
+    |
+    | Middleware stack wrapping all Lang Monitor routes (default: ['web']).
+    | Adjust to control access to the UI.
+    |
+    */
     'middleware' => ['web'], // ajuste conforme necessidade
-    'prefix' => 'lang-monitor', // URL base
-    'locales' => ['en', 'pt-BR'], // colunas padrão na UI
+
+    /*
+    |--------------------------------------------------------------------------
+    | UI Prefix
+    |--------------------------------------------------------------------------
+    | URL prefix where the Lang Monitor UI will be available.
+    | Example: "lang-monitor" → https://your-app.test/lang-monitor
+    */
+    'ui_prefix' => 'lang-monitor', // URL base
 ];

@@ -42,43 +42,80 @@
         btnNext: document.getElementById('btn-next'),
         pageInfo: document.getElementById('page-info'),
         pageSizeSel: document.getElementById('page-size'),
+
+        fileFormat: document.getElementById('file-format'),
+        btnCopy: document.getElementById('btn-copy'),
     };
+
+    function syncDownloadLabel(){
+        el.btnDownload.textContent =
+            (el.fileFormat?.value === 'php') ? 'Baixar PHP atualizado' : 'Baixar JSON atualizado';
+    }
 
     // -----------------------
     // LOAD / PARSE
     // -----------------------
-    function setRowsFromJSON(json) {
-        const arr = [];
-        if (json && typeof json === 'object' && !Array.isArray(json)) {
-            let i = 0;
-            Object.keys(json).forEach(k => {
-                arr.push({
-                    id: `row_${Date.now()}_${i++}`,
-                    key: String(k),
-                    value: json[k] == null ? '' : String(json[k])
-                });
-            });
-        } else {
-            alert('Formato inválido. Envie um objeto JSON { "chave": "valor" }');
-            return;
+    function parsePhpLang(text){
+        text = String(text || '').replace(/^\uFEFF/, '');
+        const re = /(['"])(.*?)\1\s*=>\s*(['"])((?:\\.|(?!\3).)*?)\3/gs;
+        const map = {}; let m;
+        while ((m = re.exec(text)) !== null) {
+            const key = m[2];
+            let val = m[4];
+            val = val
+                .replace(/\\\\/g, '\\')
+                .replace(/\\'/g, "'")
+                .replace(/\\"/g, '"')
+                .replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t');
+            map[key] = val;
         }
+        if (!Object.keys(map).length) throw new Error('Nenhum par key => value encontrado no PHP.');
+        return map;
+    }
 
-        // ordenação inicial por chave (A→Z)
-        arr.sort((a,b) => a.key.localeCompare(b.key));
+    function setRowsFromMap(map){
+        const arr = [];
+        if (map && typeof map === 'object' && !Array.isArray(map)) {
+            let i = 0;
+            Object.keys(map).forEach(k=>{
+                arr.push({ id:`row_${Date.now()}_${i++}`, key:String(k), value: map[k]==null?'':String(map[k]) });
+            });
+        } else { alert('Formato inválido. Esperado { "chave": "valor" }.'); return; }
+        arr.sort((a,b)=> a.key.localeCompare(b.key));
         state.rows = arr;
         applyFilters();
+    }
+
+    function importFromText(raw, filenameHint=''){
+        const s = String(raw || '');
+        const looksPhp = filenameHint.toLowerCase().endsWith('.php') || s.trimStart().startsWith('<?php');
+        const looksJson = !looksPhp; // tentativa padrão
+
+        let map;
+        if (looksPhp) {
+            map = parsePhpLang(s);
+        } else {
+            try { map = JSON.parse(s); }
+            catch {
+                // fallback: pode ser PHP sem tag inicial
+                map = parsePhpLang(s);
+            }
+        }
+        setRowsFromMap(map);
     }
 
     function readFile(file) {
         const reader = new FileReader();
         reader.onload = () => {
             try {
-                const json = JSON.parse(String(reader.result||'{}'));
-                setRowsFromJSON(json);
+                const raw = String(reader.result || '');
+                importFromText(raw, file?.name || '');
             } catch (e) {
-                alert('JSON inválido.');
+                console.error(e);
+                alert('Arquivo inválido. Envie JSON ou PHP de lang.');
             }
         };
+
         reader.readAsText(file, 'utf-8');
     }
 
@@ -197,7 +234,7 @@
             const isDup = state._dupKeys?.has(r.id);
 
             // combinar switches:
-            // - se ambos marcados, exige (faltante E duplicada)
+            // - se ambos marcados, exige (faltante OU duplicada)
             // - se só um marcado, aplica o respectivo
             if (missingOnly && dupOnly) return isMissing || isDup;
             if (missingOnly)            return isMissing;
@@ -243,6 +280,12 @@
         if (scrollBox?.scrollTo) scrollBox.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function autoResizeTextarea(el) {
+        const minHeight = 34; // altura mínima em px
+        el.style.height = 'auto';
+        el.style.height = Math.max(el.scrollHeight, minHeight) + 'px';
+    }
+
     // -----------------------
     // RENDER
     // -----------------------
@@ -261,17 +304,21 @@
 
             // --- CHAVE ---
             const tdKey = document.createElement('td');
-            const keyInput = document.createElement('input');
-            keyInput.type = 'text';
+            const keyInput = document.createElement('textarea');
             keyInput.value = row.key || '';
             keyInput.style.width = '100%';
             keyInput.style.fontFamily = 'monospace';
+            keyInput.style.resize = 'none';
+            keyInput.style.minHeight = '34px'; // garante mínimo via CSS
             keyInput.dataset.id = row.id;
             keyInput.placeholder = '— chave —';
 
             paintKeyValidation(keyInput, row.id);
+            autoResizeTextarea(keyInput);
 
             keyInput.addEventListener('input', (e) => {
+                autoResizeTextarea(e.target);
+
                 const rid = e.target.dataset.id;
                 const baseIdx = state.rows.findIndex(r => r.id === rid);
                 if (baseIdx >= 0) state.rows[baseIdx].key = e.target.value;
@@ -303,14 +350,19 @@
 
             // --- VALOR ---
             const tdVal = document.createElement('td');
-            const valInput = document.createElement('input');
-            valInput.type = 'text';
+            const valInput = document.createElement('textarea');
             valInput.value = row.value || '';
             valInput.style.width = '100%';
             valInput.style.fontFamily = 'monospace';
+            valInput.style.resize = 'none';
+            valInput.style.minHeight = '34px'; // garante mínimo via CSS
             valInput.dataset.id = row.id;
 
+            autoResizeTextarea(valInput);
+
             valInput.addEventListener('input', (e) => {
+                autoResizeTextarea(e.target);
+
                 const rid = e.target.dataset.id;
                 const baseIdx = state.rows.findIndex(r => r.id === rid);
                 if (baseIdx >= 0) state.rows[baseIdx].value = e.target.value;
@@ -409,32 +461,51 @@
     // EXPORT / SAVE
     // -----------------------
     function downloadJSON() {
-        // bloqueia se houver chaves vazias/duplicadas
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
             alert('Corrija as chaves vazias/duplicadas antes de baixar.');
             return;
         }
 
+        const fmt = (el.fileFormat?.value === 'php') ? 'php' : 'json';
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
-        const data = JSON.stringify(obj, null, 2);
-        const blob = new Blob([data], {type:'application/json'});
+
+        // helpers inline para evitar mexer no resto do arquivo
+        const phpEscape = s => String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const toPhp = (map) => {
+            const keys = Object.keys(map).sort((a,b)=> a.localeCompare(b));
+            const body = keys.map(k => `    '${phpEscape(k)}' => '${phpEscape(map[k] ?? '')}',`).join('\n');
+            return `<?php\n\nreturn [\n${body}\n];\n`;
+        };
+
+        let dataStr, mime, filename;
+        if (fmt === 'php') {
+            dataStr = toPhp(obj);
+            mime = 'text/x-php';
+            filename = 'translations_updated.php';
+        } else {
+            dataStr = JSON.stringify(obj, null, 2);
+            mime = 'application/json';
+            filename = 'translations_updated.json';
+        }
+
+        const blob = new Blob([dataStr], {type: mime});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'translations_updated.json';
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(a.href);
     }
 
     async function saveBackend() {
-        // bloqueia se houver chaves vazias/duplicadas
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
             alert('Corrija as chaves vazias/duplicadas antes de salvar.');
             return;
         }
 
+        const fmt = (el.fileFormat?.value === 'php') ? 'php' : 'json';
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
@@ -448,14 +519,59 @@
                 'X-CSRF-TOKEN': window.LANG_MONITOR_CSRF,
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ data: obj, strategy })
+            body: JSON.stringify({ data: obj, strategy, format: fmt })
         });
 
         if (!res.ok) {
             const t = await res.text().catch(() => '');
-            alert('Falha ao salvar: '+ t);
+            alert('Falha ao salvar: ' + t);
         } else {
             alert('Salvo com sucesso!');
+        }
+    }
+
+    async function copyToClipboard() {
+        // validação
+        recomputeValidation();
+        if (state._emptyKeys.size || state._dupKeys.size) {
+            alert('Corrija as chaves vazias/duplicadas antes de copiar.');
+            return;
+        }
+
+        const fmt = (el.fileFormat?.value === 'php') ? 'php' : 'json';
+        const obj = {};
+        state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
+
+        // helpers locais (iguais aos do download)
+        const phpEscape = s => String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const toPhp = (map) => {
+            const keys = Object.keys(map).sort((a,b)=> a.localeCompare(b));
+            const body = keys.map(k => `    '${phpEscape(k)}' => '${phpEscape(map[k] ?? '')}',`).join('\n');
+            return `<?php\n\nreturn [\n${body}\n];\n`;
+        };
+
+        const dataStr = (fmt === 'php')
+            ? toPhp(obj)
+            : JSON.stringify(obj, null, 2);
+
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(dataStr);
+            } else {
+                // fallback
+                const ta = document.createElement('textarea');
+                ta.value = dataStr;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            alert('Conteúdo copiado para a área de transferência!');
+        } catch (e) {
+            console.error(e);
+            alert('Não foi possível copiar. Verifique permissões do navegador.');
         }
     }
 
@@ -486,7 +602,6 @@
                 const file = e.dataTransfer.files?.[0];
                 if (file) readFile(file);
             });
-            el.dropzone.addEventListener('click', () => el.fileInput?.click());
         }
 
         el.fileInput.addEventListener('change', () => {
@@ -497,6 +612,7 @@
         // ações
         el.btnDownload.addEventListener('click', downloadJSON);
         el.btnSave.addEventListener('click', saveBackend);
+        el.btnCopy?.addEventListener('click', copyToClipboard);
         el.btnAddRow.addEventListener('click', addBlankRow);
         el.btnSort.addEventListener('click', sortByKeyAsc);
 
@@ -509,6 +625,18 @@
             state.page = 1;
             renderBody();
             updatePager();
+        });
+
+        el.fileFormat?.addEventListener('change', syncDownloadLabel);
+
+        // permitir colar direto na dropzone
+        el.dropzone?.addEventListener('paste', (e)=>{
+            const text = e.clipboardData?.getData('text') || '';
+            if (text.trim()) {
+                e.preventDefault();
+                try { importFromText(text); }
+                catch (err){ console.error(err); alert('Conteúdo inválido colado.'); }
+            }
         });
 
         // atalhos (opcionais)
@@ -538,6 +666,8 @@
             if (!isNaN(n)) state.pageSize = n;
         }
         wireUI();
+        syncDownloadLabel();
+
         // estado inicial dos badges/pager (lista vazia)
         updateStats();
         updatePager();
