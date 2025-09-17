@@ -4,17 +4,22 @@ namespace Jonasschen\LaravelLangMonitor\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
+use Jonasschen\LaravelLangMonitor\Services\LangMonitorService;
 
-class TranslationMonitorController extends Controller
+final class TranslationMonitorController extends Controller
 {
+    public function __construct(
+        private LangMonitorService $langMonitorService,
+    ) {
+
+    }
+
     public function index()
     {
         return view('lang-monitor::monitor', [
             'locales' => config('lang-monitor.locales', ['en', 'pt-BR']),
         ]);
     }
-
 
     /**
      * Recebe o payload JSON editado e persiste nas lang files (opcional),
@@ -152,5 +157,12 @@ class TranslationMonitorController extends Controller
         $lines[] = "];\n";
 
         return implode("\n", $lines);
+    }
+
+    public function scan(): JsonResponse
+    {
+        $response = $this->langMonitorService->run(true);
+
+        return response()->json($response);
     }
 }

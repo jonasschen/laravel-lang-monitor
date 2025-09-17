@@ -1,18 +1,12 @@
-// public/lang-monitor.js
 (function() {
     // -----------------------
     // STATE
     // -----------------------
     const state = {
-        rows: [],            // [{ id, key, value }]
+        rows: [],
         filteredRows: [],
-        lastAddedId: null,
-
-        // paginação
         page: 1,
         pageSize: 50,
-
-        // validação cache
         _emptyKeys: new Set(),
         _dupKeys: new Set(),
     };
@@ -30,27 +24,18 @@
         fileInput: document.getElementById('file-input'),
         btnDownload: document.getElementById('btn-download'),
         btnSave: document.getElementById('btn-save'),
+        btnScanProject: document.getElementById('btn-scan-project'),
         btnAddRow: document.getElementById('btn-add-row'),
         btnSort: document.getElementById('btn-sort'),
-
-        // badges
         statsMissing: document.getElementById('lm-badge-missing'),
         statsDup: document.getElementById('lm-badge-dup'),
-
-        // paginação
         btnPrev: document.getElementById('btn-prev'),
         btnNext: document.getElementById('btn-next'),
         pageInfo: document.getElementById('page-info'),
         pageSizeSel: document.getElementById('page-size'),
-
         fileFormat: document.getElementById('file-format'),
         btnCopy: document.getElementById('btn-copy'),
     };
-
-    function syncDownloadLabel(){
-        el.btnDownload.textContent =
-            (el.fileFormat?.value === 'php') ? 'Baixar PHP atualizado' : 'Baixar JSON atualizado';
-    }
 
     // -----------------------
     // LOAD / PARSE
@@ -69,7 +54,8 @@
                 .replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t');
             map[key] = val;
         }
-        if (!Object.keys(map).length) throw new Error('Nenhum par key => value encontrado no PHP.');
+        if (!Object.keys(map).length) throw new Error('None pair key => value found on PHP.');
+
         return map;
     }
 
@@ -80,7 +66,12 @@
             Object.keys(map).forEach(k=>{
                 arr.push({ id:`row_${Date.now()}_${i++}`, key:String(k), value: map[k]==null?'':String(map[k]) });
             });
-        } else { alert('Formato inválido. Esperado { "chave": "valor" }.'); return; }
+        } else {
+            alert('Invalid format. Waiting { "key": "value" }.');
+
+            return;
+        }
+
         arr.sort((a,b)=> a.key.localeCompare(b.key));
         state.rows = arr;
         applyFilters();
@@ -89,7 +80,6 @@
     function importFromText(raw, filenameHint=''){
         const s = String(raw || '');
         const looksPhp = filenameHint.toLowerCase().endsWith('.php') || s.trimStart().startsWith('<?php');
-        const looksJson = !looksPhp; // tentativa padrão
 
         let map;
         if (looksPhp) {
@@ -97,7 +87,6 @@
         } else {
             try { map = JSON.parse(s); }
             catch {
-                // fallback: pode ser PHP sem tag inicial
                 map = parsePhpLang(s);
             }
         }
@@ -112,7 +101,7 @@
                 importFromText(raw, file?.name || '');
             } catch (e) {
                 console.error(e);
-                alert('Arquivo inválido. Envie JSON ou PHP de lang.');
+                alert('Invalid file. Send JSON or PHP formats.');
             }
         };
 
@@ -129,9 +118,17 @@
 
         rows.forEach(r => {
             const k = (r.key || '').trim();
-            if (!k) { emptyKeys.add(r.id); return; }
-            if (seen.has(k)) { dupKeys.add(r.id); dupKeys.add(seen.get(k)); }
-            else { seen.set(k, r.id); }
+            if (!k) {
+                emptyKeys.add(r.id);
+
+                return;
+            }
+
+            if (seen.has(k)) {
+                dupKeys.add(r.id); dupKeys.add(seen.get(k));
+            } else {
+                seen.set(k, r.id);
+            }
         });
 
         return { emptyKeys, dupKeys };
@@ -150,7 +147,7 @@
         if (isEmpty || isDup) {
             inputEl.style.borderColor = '#dc3545';
             inputEl.style.background = '#fff5f5';
-            inputEl.title = isEmpty ? 'Chave vazia' : 'Chave duplicada';
+            inputEl.title = isEmpty ? 'Empty key' : 'Duplicated key';
         } else {
             inputEl.style.borderColor = '';
             inputEl.style.background = '';
@@ -165,6 +162,7 @@
             const valEmpty = !(r.value && r.value.trim().length);
             if (keyEmpty || valEmpty) c++;
         });
+
         return c;
     }
 
@@ -178,7 +176,7 @@
         const dups = dupKeys.size;
 
         if (el.statsMissing) {
-            el.statsMissing.textContent = `Faltantes: ${missing} / ${total}`;
+            el.statsMissing.textContent = `Missings: ${missing} / ${total}`;
             if (missing === 0) {
                 el.statsMissing.style.opacity = '.6';
                 el.statsMissing.classList?.remove('bg-warning','text-dark');
@@ -191,7 +189,7 @@
         }
 
         if (el.statsDup) {
-            el.statsDup.textContent = `Duplicadas: ${dups}`;
+            el.statsDup.textContent = `Duplicated: ${dups}`;
             if (dups === 0) {
                 el.statsDup.style.opacity = '.6';
                 el.statsDup.classList?.remove('bg-danger');
@@ -212,7 +210,6 @@
         const missingOnly = !!el.missingOnly?.checked;
         const dupOnly     = !!el.dupOnly?.checked;
 
-        // precisamos do estado de duplicadas antes de filtrar
         recomputeValidation();
 
         state.filteredRows = state.rows.filter(r => {
@@ -225,25 +222,21 @@
 
             if (!inQuery) return false;
 
-            // regra "faltantes": chave OU valor vazios
             const keyEmpty = !(keyText.trim().length);
             const valEmpty = !(valText.trim().length);
             const isMissing = keyEmpty || valEmpty;
 
-            // regra "duplicadas": chave aparece mais de uma vez
             const isDup = state._dupKeys?.has(r.id);
 
-            // combinar switches:
-            // - se ambos marcados, exige (faltante OU duplicada)
-            // - se só um marcado, aplica o respectivo
             if (missingOnly && dupOnly) return isMissing || isDup;
-            if (missingOnly)            return isMissing;
-            if (dupOnly)                return isDup;
+
+            if (missingOnly) return isMissing;
+
+            if (dupOnly) return isDup;
 
             return true;
         });
 
-        // sempre que filtra, volta pra primeira página
         state.page = 1;
         renderBody();
         updatePager();
@@ -255,19 +248,22 @@
     // -----------------------
     function totalPages() {
         const n = Math.ceil((state.filteredRows?.length || 0) / state.pageSize);
+
         return Math.max(1, n || 1);
     }
+
     function clampPage(p) {
         return Math.min(Math.max(1, p), totalPages());
     }
 
     function getPageSlice() {
         const start = (state.page - 1) * state.pageSize;
+
         return state.filteredRows.slice(start, start + state.pageSize);
     }
 
     function updatePager() {
-        el.pageInfo.textContent = `Página ${state.page} de ${totalPages()}`;
+        el.pageInfo.textContent = `Page ${state.page} of ${totalPages()}`;
         el.btnPrev.disabled = state.page <= 1;
         el.btnNext.disabled = state.page >= totalPages();
     }
@@ -280,21 +276,30 @@
         if (scrollBox?.scrollTo) scrollBox.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function autoResizeTextarea(el) {
-        const minHeight = 34; // altura mínima em px
-        el.style.height = 'auto';
-        el.style.height = Math.max(el.scrollHeight, minHeight) + 'px';
+    function autoResizeRow(tr) {
+        const minHeight = 42;
+        const areas = tr.querySelectorAll('textarea');
+        let target = minHeight;
+
+        areas.forEach(a => {
+            a.style.height = 'auto';
+            target = Math.max(target, (a.scrollHeight - 5) || 0, minHeight);
+        });
+
+        areas.forEach(a => {
+            a.style.height = target + 'px';
+        });
     }
 
-    // -----------------------
-    // RENDER
-    // -----------------------
     function renderBody() {
-        if (!el.tbody) { el.tbody = el.table?.querySelector('tbody'); }
+        if (!el.tbody) {
+            el.tbody = el.table?.querySelector('tbody');
+        }
+
         if (!el.tbody) return;
+
         el.tbody.innerHTML = '';
 
-        // (re)calcula validação antes de pintar
         recomputeValidation();
 
         const pageRows = getPageSlice();
@@ -302,32 +307,27 @@
         pageRows.forEach((row, idxOnPage) => {
             const tr = document.createElement('tr');
 
-            // --- CHAVE ---
+            // --- KEY ---
             const tdKey = document.createElement('td');
             const keyInput = document.createElement('textarea');
             keyInput.value = row.key || '';
-            keyInput.style.width = '100%';
-            keyInput.style.fontFamily = 'monospace';
-            keyInput.style.resize = 'none';
-            keyInput.style.minHeight = '34px'; // garante mínimo via CSS
+            keyInput.style.minHeight = '42px';
+            keyInput.id = row.id;
             keyInput.dataset.id = row.id;
-            keyInput.placeholder = '— chave —';
+            keyInput.placeholder = '— key —';
 
             paintKeyValidation(keyInput, row.id);
-            autoResizeTextarea(keyInput);
 
             keyInput.addEventListener('input', (e) => {
-                autoResizeTextarea(e.target);
+                autoResizeRow(tr);
 
                 const rid = e.target.dataset.id;
                 const baseIdx = state.rows.findIndex(r => r.id === rid);
                 if (baseIdx >= 0) state.rows[baseIdx].key = e.target.value;
 
-                // reflete também na coleção filtrada correspondente
                 const globalIdx = (state.page - 1) * state.pageSize + idxOnPage;
                 if (state.filteredRows[globalIdx]) state.filteredRows[globalIdx].key = e.target.value;
 
-                // revalida só esse input
                 recomputeValidation();
                 paintKeyValidation(e.target, rid);
                 updateStats();
@@ -342,26 +342,18 @@
                 }
             });
 
-            if (state.lastAddedId && row.id === state.lastAddedId) {
-                setTimeout(() => keyInput.focus(), 0);
-            }
             tdKey.appendChild(keyInput);
             tr.appendChild(tdKey);
 
-            // --- VALOR ---
+            // --- VALUE ---
             const tdVal = document.createElement('td');
             const valInput = document.createElement('textarea');
             valInput.value = row.value || '';
-            valInput.style.width = '100%';
-            valInput.style.fontFamily = 'monospace';
-            valInput.style.resize = 'none';
-            valInput.style.minHeight = '34px'; // garante mínimo via CSS
+            valInput.style.minHeight = '42px';
             valInput.dataset.id = row.id;
 
-            autoResizeTextarea(valInput);
-
             valInput.addEventListener('input', (e) => {
-                autoResizeTextarea(e.target);
+                autoResizeRow(tr);
 
                 const rid = e.target.dataset.id;
                 const baseIdx = state.rows.findIndex(r => r.id === rid);
@@ -370,11 +362,6 @@
                 const globalIdx = (state.page - 1) * state.pageSize + idxOnPage;
                 if (state.filteredRows[globalIdx]) state.filteredRows[globalIdx].value = e.target.value;
 
-                if ((e.target.value || '').trim().length) {
-                    tdVal.style.background = '';
-                } else {
-                    tdVal.style.background = '#fff7f7';
-                }
                 updateStats();
             });
 
@@ -388,30 +375,44 @@
             });
 
             if (!row.value) {
-                valInput.placeholder = '— faltante —';
-                tdVal.style.background = '#fff7f7';
+                valInput.placeholder = '— missing —';
             }
             tdVal.appendChild(valInput);
             tr.appendChild(tdVal);
 
-            // --- AÇÕES ---
+            // --- ACTIONS ---
             const tdActions = document.createElement('td');
             tdActions.style.whiteSpace = 'nowrap';
 
+            const delIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            delIcon.setAttribute('viewBox', '0 0 24 24');
+            delIcon.setAttribute('width', '24');
+            delIcon.setAttribute('height', '24');
+            delIcon.setAttribute('aria-hidden', 'true');
+            delIcon.setAttribute('focusable', 'false');
+
+            const svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            svgPath.setAttribute('d', 'M6 7h12l-1 14H7L6 7zm10-3h-4l-1-1H9L8 4H4v2h16V4h-4z');
+            svgPath.setAttribute('fill', '#d33535');
+            delIcon.appendChild(svgPath);
+
             const delBtn = document.createElement('button');
             delBtn.type = 'button';
-            delBtn.textContent = 'Remover';
-            delBtn.className = 'btn btn-sm btn-outline-danger';
+            delBtn.className = 'btn btn-sm btn-secondary btn-outline-danger';
+            delBtn.title = '[Ctrl+Del]';
             delBtn.dataset.id = row.id;
+            delBtn.append(delIcon, ' Remove');
             delBtn.addEventListener('click', (e) => {
                 const rid = e.currentTarget.dataset.id;
-                if (confirm('Remover esta linha?')) removeRowById(rid);
+                if (confirm('Remove this line?')) removeRowById(rid);
             });
 
             tdActions.appendChild(delBtn);
             tr.appendChild(tdActions);
 
             el.tbody.appendChild(tr);
+
+            autoResizeRow(tr);
         });
     }
 
@@ -421,23 +422,22 @@
     function addBlankRow() {
         const newId = `row_${Date.now()}_${Math.floor(Math.random()*1e6)}`;
         state.rows.push({ id: newId, key: '', value: '' });
-        state.lastAddedId = newId;
 
-        // mostra na última página
-        applyFilters();                 // recalcula filtrados e reseta page=1
-        state.page = totalPages();      // vai pra última
+        applyFilters();
+        state.page = totalPages();
         goToPage(state.page);
         updatePager();
         updateStats();
+
+        setTimeout(() => document.getElementById(newId).focus(), 0);
     }
 
     function removeRowById(rowId) {
         const ix = state.rows.findIndex(r => r.id === rowId);
         if (ix >= 0) state.rows.splice(ix, 1);
-        if (state.lastAddedId === rowId) state.lastAddedId = null;
 
         applyFilters();
-        state.page = clampPage(state.page); // se a página esvaziou, recua
+        state.page = clampPage(state.page);
         goToPage(state.page);
         updateStats();
     }
@@ -449,12 +449,16 @@
             const bk = (b.key || '').trim();
             const aEmpty = ak.length === 0;
             const bEmpty = bk.length === 0;
+
             if (aEmpty && bEmpty) return 0;
-            if (aEmpty) return 1;          // vazias por último
+
+            if (aEmpty) return 1;
+
             if (bEmpty) return -1;
+
             return collator.compare(ak, bk);
         });
-        applyFilters(); // recalcula, vai pra 1ª página, renderiza e atualiza pager + stats
+        applyFilters();
     }
 
     // -----------------------
@@ -463,7 +467,8 @@
     function downloadJSON() {
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
-            alert('Corrija as chaves vazias/duplicadas antes de baixar.');
+            alert('Fix the empty/duplicated keys before download.');
+
             return;
         }
 
@@ -471,11 +476,11 @@
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
-        // helpers inline para evitar mexer no resto do arquivo
         const phpEscape = s => String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         const toPhp = (map) => {
             const keys = Object.keys(map).sort((a,b)=> a.localeCompare(b));
             const body = keys.map(k => `    '${phpEscape(k)}' => '${phpEscape(map[k] ?? '')}',`).join('\n');
+
             return `<?php\n\nreturn [\n${body}\n];\n`;
         };
 
@@ -501,7 +506,8 @@
     async function saveBackend() {
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
-            alert('Corrija as chaves vazias/duplicadas antes de salvar.');
+            alert('Fix the empty/duplicated keys before save.');
+
             return;
         }
 
@@ -524,9 +530,32 @@
 
         if (!res.ok) {
             const t = await res.text().catch(() => '');
-            alert('Falha ao salvar: ' + t);
+            alert('Error saving: ' + t);
         } else {
-            alert('Salvo com sucesso!');
+            alert('Successfully saved!');
+        }
+    }
+
+    async function scanProject() {
+        if (state.rows.length > 0 && !confirm('Are you sure you want to scan the project and lose unsaved translations?')) {
+            return;
+        }
+
+        const res = await fetch(window.LANG_MONITOR_SCAN_PROJECT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.LANG_MONITOR_CSRF,
+                'Accept': 'application/json',
+            },
+        });
+
+        if (!res.ok) {
+            const t = await res.text().catch(() => '');
+            alert('Error scaning project: ' + t);
+        } else {
+            alert('Successfully scanned!');
+            alert(res);
         }
     }
 
@@ -534,7 +563,8 @@
         // validação
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
-            alert('Corrija as chaves vazias/duplicadas antes de copiar.');
+            alert('Fix the empty/duplicated key before copy.');
+
             return;
         }
 
@@ -542,11 +572,11 @@
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
-        // helpers locais (iguais aos do download)
         const phpEscape = s => String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         const toPhp = (map) => {
             const keys = Object.keys(map).sort((a,b)=> a.localeCompare(b));
             const body = keys.map(k => `    '${phpEscape(k)}' => '${phpEscape(map[k] ?? '')}',`).join('\n');
+
             return `<?php\n\nreturn [\n${body}\n];\n`;
         };
 
@@ -568,10 +598,10 @@
                 document.execCommand('copy');
                 document.body.removeChild(ta);
             }
-            alert('Conteúdo copiado para a área de transferência!');
+            alert('Content successfully copied to clipboard!');
         } catch (e) {
             console.error(e);
-            alert('Não foi possível copiar. Verifique permissões do navegador.');
+            alert('Unable to copy. Check your browser permissions.');
         }
     }
 
@@ -579,26 +609,28 @@
     // WIRE UI
     // -----------------------
     function wireUI() {
-        // busca / filtro
         el.search.addEventListener('input', applyFilters);
         el.missingOnly.addEventListener('change', applyFilters);
         el.dupOnly && el.dupOnly.addEventListener('change', applyFilters);
 
-        // dropzone
         if (el.dropzone) {
             ['dragenter','dragover'].forEach(evt => {
                 el.dropzone.addEventListener(evt, e => {
-                    e.preventDefault(); e.stopPropagation();
-                    el.dropzone.style.background='#f7fbff';
+                    el.dropzone.classList.add('is-dragover');
+                    e.preventDefault();
+                    e.stopPropagation();
                 });
             });
+
             ['dragleave','drop'].forEach(evt => {
                 el.dropzone.addEventListener(evt, e => {
-                    e.preventDefault(); e.stopPropagation();
-                    el.dropzone.style.background='';
+                    el.dropzone.classList.remove('is-dragover');
+                    e.preventDefault();
+                    e.stopPropagation();
                 });
             });
             el.dropzone.addEventListener('drop', e => {
+                el.dropzone.classList.remove('is-dragover');
                 const file = e.dataTransfer.files?.[0];
                 if (file) readFile(file);
             });
@@ -609,14 +641,13 @@
             if (file) readFile(file);
         });
 
-        // ações
         el.btnDownload.addEventListener('click', downloadJSON);
         el.btnSave.addEventListener('click', saveBackend);
+        el.btnScanProject.addEventListener('click', scanProject);
         el.btnCopy?.addEventListener('click', copyToClipboard);
         el.btnAddRow.addEventListener('click', addBlankRow);
         el.btnSort.addEventListener('click', sortByKeyAsc);
 
-        // paginação
         el.btnPrev.addEventListener('click', () => goToPage(state.page - 1));
         el.btnNext.addEventListener('click', () => goToPage(state.page + 1));
         el.pageSizeSel.addEventListener('change', () => {
@@ -627,30 +658,27 @@
             updatePager();
         });
 
-        el.fileFormat?.addEventListener('change', syncDownloadLabel);
-
-        // permitir colar direto na dropzone
         el.dropzone?.addEventListener('paste', (e)=>{
             const text = e.clipboardData?.getData('text') || '';
             if (text.trim()) {
                 e.preventDefault();
                 try { importFromText(text); }
-                catch (err){ console.error(err); alert('Conteúdo inválido colado.'); }
+                catch (err){ console.error(err); alert('Invalid content pasted.'); }
             }
         });
 
-        // atalhos (opcionais)
         document.addEventListener('keydown', (e) => {
             // Ctrl/Cmd+Enter => nova linha
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') addBlankRow();
             if ((e.ctrlKey || e.metaKey) && e.key === 'Delete') {
                 const active = document.activeElement;
+
                 if (!active) return;
+
                 const rid = active.dataset && active.dataset.id;
-                if (rid && confirm('Remover a linha atual?')) removeRowById(rid);
+                if (rid && confirm('Remove the current line?')) removeRowById(rid);
             }
 
-            // Alt+←/→ => paginação
             if (e.altKey && e.key === 'ArrowRight') goToPage(state.page + 1);
             if (e.altKey && e.key === 'ArrowLeft')  goToPage(state.page - 1);
         });
@@ -660,15 +688,12 @@
     // INIT
     // -----------------------
     function init() {
-        // page size default from select
         if (el.pageSizeSel) {
             const n = parseInt(el.pageSizeSel.value, 10);
             if (!isNaN(n)) state.pageSize = n;
         }
         wireUI();
-        syncDownloadLabel();
 
-        // estado inicial dos badges/pager (lista vazia)
         updateStats();
         updatePager();
     }
