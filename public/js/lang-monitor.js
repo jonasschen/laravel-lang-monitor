@@ -1,3 +1,7 @@
+/*
+   Lang Monitor UI — Jonas Schen
+*/
+
 (function() {
     // -----------------------
     // STATE
@@ -27,6 +31,7 @@
         btnScanProject: document.getElementById('btn-scan-project'),
         btnAddRow: document.getElementById('btn-add-row'),
         btnSort: document.getElementById('btn-sort'),
+        btnClearAll: document.getElementById('btn-clear-all'),
         statsMissing: document.getElementById('lm-badge-missing'),
         statsDup: document.getElementById('lm-badge-dup'),
         btnPrev: document.getElementById('btn-prev'),
@@ -476,6 +481,11 @@
         applyFilters();
     }
 
+    function clearAll() {
+        state.rows = [];
+        applyFilters();
+    }
+
     function closeNotification() {
         this.classList.remove('error');
         this.classList.remove('success');
@@ -701,6 +711,7 @@
         el.btnCopy?.addEventListener('click', copyToClipboard);
         el.btnAddRow.addEventListener('click', addBlankRow);
         el.btnSort.addEventListener('click', sortByKeyAsc);
+        el.btnClearAll.addEventListener('click', clearAll);
         el.exportNotification.addEventListener('click', closeNotification);
         el.importNotification.addEventListener('click', closeNotification);
         el.toolbarNotification.addEventListener('click', closeNotification);

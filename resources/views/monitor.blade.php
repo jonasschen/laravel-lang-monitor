@@ -84,7 +84,7 @@
                             </span>
                             Sort
                         </button>
-                        <button class="btn btn-sm btn-secondary" id="btn-sort">
+                        <button class="btn btn-sm btn-secondary" id="btn-clear-all">
                             <span class="material-symbols-outlined">
                                 delete_forever
                             </span>
