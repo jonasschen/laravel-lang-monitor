@@ -35,6 +35,9 @@
         pageSizeSel: document.getElementById('page-size'),
         fileFormat: document.getElementById('file-format'),
         btnCopy: document.getElementById('btn-copy'),
+        exportNotification: document.getElementById('export-notification'),
+        importNotification: document.getElementById('import-notification'),
+        toolbarNotification: document.getElementById('toolbar-notification'),
     };
 
     // -----------------------
@@ -79,7 +82,7 @@
                 arr.push({ id:`row_${Date.now()}_${i++}`, key:String(k), value: map[k]==null?'':String(map[k]) });
             });
         } else {
-            alert('Invalid format. Waiting { "key": "value" }.');
+            showImportNotification('Invalid format. Waiting { "key": "value" }.', true);
 
             return;
         }
@@ -121,7 +124,7 @@
                 importFromText(raw, file?.name || '');
             } catch (e) {
                 console.error(e);
-                alert('Invalid file. Send JSON, PHP or TXT formats.');
+                showImportNotification('Invalid file. Send JSON, PHP or TXT formats.', true);
             }
         };
 
@@ -406,7 +409,7 @@
 
             const delIcon = document.createElement('span');
             delIcon.className = 'material-symbols-outlined text-danger';
-            delIcon.textContent = 'delete_forever';
+            delIcon.textContent = 'variable_remove';
 
             const delBtn = document.createElement('button');
             delBtn.type = 'button';
@@ -473,13 +476,19 @@
         applyFilters();
     }
 
+    function closeNotification() {
+        this.classList.remove('error');
+        this.classList.remove('success');
+        this.style.display = 'none';
+    }
+
     // -----------------------
     // EXPORT / SAVE
     // -----------------------
     function downloadTranslations() {
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
-            alert('Fix the empty/duplicated keys before download.');
+            showExportNotification('Fix the empty/duplicated keys before download.', true);
 
             return;
         }
@@ -528,7 +537,7 @@
     async function saveBackend() {
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
-            alert('Fix the empty/duplicated keys before save.');
+            showExportNotification('Fix the empty/duplicated keys before save.', true);
 
             return;
         }
@@ -550,12 +559,17 @@
             body: JSON.stringify({ data: obj, strategy, format: format })
         });
 
-        if (!res.ok) {
-            const t = await res.text().catch(() => '');
-            alert('Error saving: ' + t);
-        } else {
-            alert('Successfully saved!');
+        if (res.ok && res.status === 200) {
+            const jsonData = await res.json();
+            if (jsonData.success) {
+                showExportNotification(`Successfully saved!<br>File location: ${jsonData.path}`);
+            }
+
+            return;
         }
+
+        const t = await res.text().catch(() => '');
+        showExportNotification('Error saving: ' + t, true);
     }
 
     async function scanProject() {
@@ -572,11 +586,7 @@
             },
         });
 
-        if (!res.ok) {
-            const t = await res.text().catch(() => '');
-            alert('Error scaning project: ' + t);
-        } else {
-            alert('Successfully scanned!');
+        if (res.ok && res.status === 200) {
             const jsonData = await res.json();
 
             const missedKeys = Object.values(jsonData.keys_not_found).reduce((newObj, value) => {
@@ -586,13 +596,20 @@
             }, {});
 
             importFromText(missedKeys);
+
+            showToolbarNotification('Project successfully scanned!');
+
+            return;
         }
+
+        const t = await res.text().catch(() => '');
+        showToolbarNotification('Error scaning project: ' + t, true);
     }
 
     async function copyToClipboard() {
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
-            alert('Fix the empty/duplicated key before copy.');
+            showExportNotification('Fix the empty/duplicated key before copy.', true);
 
             return;
         }
@@ -635,10 +652,10 @@
                 document.execCommand('copy');
                 document.body.removeChild(ta);
             }
-            alert('Content successfully copied to clipboard!');
+            showExportNotification('Content successfully copied to clipboard!');
         } catch (e) {
             console.error(e);
-            alert('Unable to copy. Check your browser permissions.');
+            showExportNotification('Unable to copy. Check your browser permissions.', true);
         }
     }
 
@@ -684,6 +701,9 @@
         el.btnCopy?.addEventListener('click', copyToClipboard);
         el.btnAddRow.addEventListener('click', addBlankRow);
         el.btnSort.addEventListener('click', sortByKeyAsc);
+        el.exportNotification.addEventListener('click', closeNotification);
+        el.importNotification.addEventListener('click', closeNotification);
+        el.toolbarNotification.addEventListener('click', closeNotification);
 
         el.btnPrev.addEventListener('click', () => goToPage(state.page - 1));
         el.btnNext.addEventListener('click', () => goToPage(state.page + 1));
@@ -699,8 +719,12 @@
             const text = e.clipboardData?.getData('text') || '';
             if (text.trim()) {
                 e.preventDefault();
-                try { importFromText(text); }
-                catch (err){ console.error(err); alert('Invalid content pasted.'); }
+                try {
+                    importFromText(text);
+                } catch (err) {
+                    console.error(err);
+                    showImportNotification('Invalid content pasted.', true);
+                }
             }
         });
 
@@ -718,6 +742,38 @@
             if (e.altKey && e.key === 'ArrowRight') goToPage(state.page + 1);
             if (e.altKey && e.key === 'ArrowLeft')  goToPage(state.page - 1);
         });
+    }
+
+    // -----------------------
+    // NOTIFICATIONS
+    // -----------------------
+    function showExportNotification(message, isError = false) {
+        const notificationCard = document.getElementById('export-notification');
+        handleNotification(notificationCard, message, isError);
+    }
+
+    function showImportNotification(message, isError = false) {
+        const notificationCard = document.getElementById('import-notification');
+        handleNotification(notificationCard, message, isError);
+    }
+
+    function showToolbarNotification(message, isError = false) {
+        const notificationCard = document.getElementById('toolbar-notification');
+        handleNotification(notificationCard, message, isError);
+    }
+
+    function handleNotification(notificationCard, message, isError) {
+        if (!notificationCard) return;
+
+        notificationCard.innerHTML = message;
+        if (isError) {
+            notificationCard.classList.add('error');
+            notificationCard.classList.remove('success');
+        } else {
+            notificationCard.classList.add('success');
+            notificationCard.classList.remove('error');
+        }
+        notificationCard.style.display = 'flex';
     }
 
     // -----------------------

@@ -67,7 +67,10 @@ final class TranslationMonitorController extends Controller
             return response()->json(['message' => 'Failed to write file.'], 500);
         }
 
-        return response()->json(['ok' => true, 'path' => $path]);
+        return response()->json([
+            'success' => true,
+            'path' => $path,
+        ]);
     }
 
     public function scan(): JsonResponse

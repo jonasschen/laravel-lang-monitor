@@ -497,6 +497,29 @@ input[type="radio"] {
     text-align: center;
 }
 
+/* ---------- Notifications ---------- */
+.notification-area {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    background-color: #000;
+    cursor: pointer;
+}
+
+.notification-area:hover {
+    background-color: rgb(30 33 44);
+}
+
+.notification-area.success {
+    border: thin var(--primary) solid;
+    box-shadow: 0 0 8px var(--primary);
+}
+
+.notification-area.error {
+    border: thin var(--danger) solid;
+    box-shadow: 0 0 8px var(--danger);
+}
+
 /* ---------- Responsive helpers ---------- */
 @media (max-width: 720px) {
     #dropzone {

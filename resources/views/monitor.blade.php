@@ -5,7 +5,7 @@
         <title>Lang Monitor UI - by Jonas Schen</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{{ asset('vendor/lang-monitor/css/lang-monitor.css') }}">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add_row_below,backup_table,delete_forever,download,keyboard_arrow_left,keyboard_arrow_right,plagiarism,save,sort_by_alpha" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add_row_below,backup_table,delete_forever,download,keyboard_arrow_left,keyboard_arrow_right,plagiarism,save,sort_by_alpha,variable_remove" />
     </head>
     <body>
         <div class="container" id="lm-app">
@@ -28,6 +28,8 @@
                     to select a file from your device.
                 </div>
             </div>
+
+            <div id="import-notification" class="card notification-area" title="Click to close" style="display: none"></div>
 
             <div class="card export">
                 <div class="w-full">
@@ -59,6 +61,8 @@
                 </button>
             </div>
 
+            <div id="export-notification" class="card notification-area" title="Click to close" style="display: none"></div>
+
             <div class="card toolbar">
                 <div class="toolbar-controls">
                     <div class="toolbar-actions">
@@ -79,6 +83,12 @@
                                 sort_by_alpha
                             </span>
                             Sort
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="btn-sort">
+                            <span class="material-symbols-outlined">
+                                delete_forever
+                            </span>
+                            Clear all
                         </button>
                     </div>
                     <div class="toolbar-labels">
@@ -105,6 +115,8 @@
                     </label>
                 </div>
             </div>
+
+            <div id="toolbar-notification" class="card notification-area" title="Click to close" style="display: none"></div>
 
             <div class="table-responsive">
                 <table class="table table-striped table-hover w-full" id="translations-table">
