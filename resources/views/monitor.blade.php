@@ -5,10 +5,16 @@
         <title>Lang Monitor UI - by Jonas Schen</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{{ asset('vendor/lang-monitor/css/lang-monitor.css') }}">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add_row_below,backup_table,delete_forever,download,keyboard_arrow_left,keyboard_arrow_right,plagiarism,save,sort_by_alpha" />
     </head>
     <body>
         <div class="container" id="lm-app">
-            <h1 class="h3">Lang Monitor UI</h1>
+            <div class="header">
+                <img src="{{ asset('vendor/lang-monitor/images/lang_monitor_logo_small.png') }}" alt="Lang Monitor Logo" width="32" height="32" class="me-2">
+                <h1 class="h3">
+                    Lang Monitor UI
+                </h1>
+            </div>
 
             <div class="card">
                 <div id="dropzone">
@@ -17,7 +23,7 @@
                     Or
                     <label>
                         <u>click here</u>
-                        <input type="file" id="file-input" accept=".json,.php,application/json,text/x-php" style="display:none">
+                        <input type="file" id="file-input" accept=".txt,.json,.php,text/plain,application/json,text/x-php" style="display:none">
                     </label>
                     to select a file from your device.
                 </div>
@@ -30,19 +36,50 @@
                 <select id="file-format" class="form-control">
                     <option value="json" selected>JSON (.json)</option>
                     <option value="php">PHP (.php)</option>
+                    <option value="txt">TEXT (.txt)</option>
                 </select>
 
-                <button class="btn btn-sm btn-primary" id="btn-download">Download</button>
-                <button class="btn btn-sm btn-success" id="btn-save">Save</button>
-                <button class="btn btn-sm btn-yellow" id="btn-copy">Copy to clipboard</button>
+                <button class="btn btn-sm btn-primary" id="btn-download">
+                    <span class="material-symbols-outlined">
+                        download
+                    </span>
+                    Download
+                </button>
+                <button class="btn btn-sm btn-success" id="btn-save">
+                    <span class="material-symbols-outlined">
+                        save
+                    </span>
+                    Save to file
+                </button>
+                <button class="btn btn-sm btn-yellow" id="btn-copy">
+                    <span class="material-symbols-outlined">
+                        backup_table
+                    </span>
+                    Copy to clipboard
+                </button>
             </div>
 
             <div class="card toolbar">
                 <div class="toolbar-controls">
                     <div class="toolbar-actions">
-                        <button class="btn btn-sm btn-secondary" id="btn-scan-project">Scan project</button>
-                        <button class="btn btn-sm btn-secondary" id="btn-add-row" title="[Ctrl+Enter]">+ New line</button>
-                        <button class="btn btn-sm btn-secondary" id="btn-sort">Sort A→Z</button>
+                        <button class="btn btn-sm btn-secondary" id="btn-scan-project">
+                            <span class="material-symbols-outlined">
+                                plagiarism
+                            </span>
+                            Scan project
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="btn-add-row" title="[Ctrl+Enter]">
+                            <span class="material-symbols-outlined">
+                                add_row_below
+                            </span>
+                            New line
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="btn-sort">
+                            <span class="material-symbols-outlined">
+                                sort_by_alpha
+                            </span>
+                            Sort
+                        </button>
                     </div>
                     <div class="toolbar-labels">
                         <span id="lm-badge-missing" class="badge bg-warning text-dark">
@@ -93,9 +130,19 @@
                     </select>
                 </label>
 
-                <button class="btn btn-sm btn-secondary" id="btn-prev" title="[Ctrl + ←]">← Previous</button>
+                <button class="btn btn-sm btn-secondary" id="btn-prev" title="[Ctrl + ←]">
+                    <span class="material-symbols-outlined">
+                        keyboard_arrow_left
+                    </span>
+                    Previous
+                </button>
                 <span id="page-info">Page 1 of 1</span>
-                <button class="btn btn-sm btn-secondary" id="btn-next" title="[Ctrl + →]">Next →</button>
+                <button class="btn btn-sm btn-secondary" id="btn-next" title="[Ctrl + →]">
+                    Next
+                    <span class="material-symbols-outlined">
+                        keyboard_arrow_right
+                    </span>
+                </button>
             </div>
         </div>
 

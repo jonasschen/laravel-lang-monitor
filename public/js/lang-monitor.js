@@ -59,6 +59,18 @@
         return map;
     }
 
+    function parseTextLang(text) {
+        return text
+            .split("\n")
+            .map(line => line.trim())
+            .filter(line => line)
+            .reduce((newObj, line) => {
+                newObj[line] = "";
+
+                return newObj;
+            }, {});
+    }
+
     function setRowsFromMap(map){
         const arr = [];
         if (map && typeof map === 'object' && !Array.isArray(map)) {
@@ -78,18 +90,26 @@
     }
 
     function importFromText(raw, filenameHint=''){
-        const s = String(raw || '');
-        const looksPhp = filenameHint.toLowerCase().endsWith('.php') || s.trimStart().startsWith('<?php');
-
+        let isPhp = false;
+        const isObject = (typeof raw == 'object');
         let map;
-        if (looksPhp) {
-            map = parsePhpLang(s);
+        if (isObject) {
+            map = raw;
         } else {
-            try { map = JSON.parse(s); }
-            catch {
+            const s = String(raw || '');
+            isPhp = filenameHint.toLowerCase().endsWith('.php') || s.trimStart().startsWith('<?php');
+
+            if (isPhp) {
                 map = parsePhpLang(s);
+            } else {
+                try {
+                    map = JSON.parse(s);
+                } catch {
+                    map = parseTextLang(s);
+                }
             }
         }
+
         setRowsFromMap(map);
     }
 
@@ -101,7 +121,7 @@
                 importFromText(raw, file?.name || '');
             } catch (e) {
                 console.error(e);
-                alert('Invalid file. Send JSON or PHP formats.');
+                alert('Invalid file. Send JSON, PHP or TXT formats.');
             }
         };
 
@@ -114,7 +134,7 @@
     function validateRows(rows) {
         const emptyKeys = new Set();
         const dupKeys = new Set();
-        const seen = new Map(); // key -> id
+        const seen = new Map();
 
         rows.forEach(r => {
             const k = (r.key || '').trim();
@@ -384,17 +404,9 @@
             const tdActions = document.createElement('td');
             tdActions.style.whiteSpace = 'nowrap';
 
-            const delIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            delIcon.setAttribute('viewBox', '0 0 24 24');
-            delIcon.setAttribute('width', '24');
-            delIcon.setAttribute('height', '24');
-            delIcon.setAttribute('aria-hidden', 'true');
-            delIcon.setAttribute('focusable', 'false');
-
-            const svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            svgPath.setAttribute('d', 'M6 7h12l-1 14H7L6 7zm10-3h-4l-1-1H9L8 4H4v2h16V4h-4z');
-            svgPath.setAttribute('fill', '#d33535');
-            delIcon.appendChild(svgPath);
+            const delIcon = document.createElement('span');
+            delIcon.className = 'material-symbols-outlined text-danger';
+            delIcon.textContent = 'delete_forever';
 
             const delBtn = document.createElement('button');
             delBtn.type = 'button';
@@ -464,7 +476,7 @@
     // -----------------------
     // EXPORT / SAVE
     // -----------------------
-    function downloadJSON() {
+    function downloadTranslations() {
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
             alert('Fix the empty/duplicated keys before download.');
@@ -472,7 +484,7 @@
             return;
         }
 
-        const fmt = (el.fileFormat?.value === 'php') ? 'php' : 'json';
+        const format = el.fileFormat?.value;
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
@@ -484,16 +496,26 @@
             return `<?php\n\nreturn [\n${body}\n];\n`;
         };
 
-        let dataStr, mime, filename;
-        if (fmt === 'php') {
-            dataStr = toPhp(obj);
-            mime = 'text/x-php';
-            filename = 'translations_updated.php';
-        } else {
-            dataStr = JSON.stringify(obj, null, 2);
-            mime = 'application/json';
-            filename = 'translations_updated.json';
+        let dataStr, mime, ext;
+
+        switch (format) {
+            case 'php':
+                dataStr = toPhp(obj);
+                mime = 'text/x-php';
+                ext = '.php';
+                break;
+            case 'json':
+                dataStr = JSON.stringify(obj, null, 2);
+                mime = 'application/json';
+                ext = '.json';
+                break;
+            case 'txt':
+                dataStr = Object.keys(obj).map(k => `${k}: ${obj[k]}`).join('\n');
+                mime = 'text/plain';
+                ext = '.txt';
+                break;
         }
+        const filename = `exported_translations_${Date.now()}${ext}`;
 
         const blob = new Blob([dataStr], {type: mime});
         const a = document.createElement('a');
@@ -511,7 +533,7 @@
             return;
         }
 
-        const fmt = (el.fileFormat?.value === 'php') ? 'php' : 'json';
+        const format = el.fileFormat?.value;
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
@@ -525,7 +547,7 @@
                 'X-CSRF-TOKEN': window.LANG_MONITOR_CSRF,
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ data: obj, strategy, format: fmt })
+            body: JSON.stringify({ data: obj, strategy, format: format })
         });
 
         if (!res.ok) {
@@ -555,12 +577,19 @@
             alert('Error scaning project: ' + t);
         } else {
             alert('Successfully scanned!');
-            alert(res);
+            const jsonData = await res.json();
+
+            const missedKeys = Object.values(jsonData.keys_not_found).reduce((newObj, value) => {
+                newObj[value] = '';
+
+                return newObj;
+            }, {});
+
+            importFromText(missedKeys);
         }
     }
 
     async function copyToClipboard() {
-        // validação
         recomputeValidation();
         if (state._emptyKeys.size || state._dupKeys.size) {
             alert('Fix the empty/duplicated key before copy.');
@@ -568,7 +597,7 @@
             return;
         }
 
-        const fmt = (el.fileFormat?.value === 'php') ? 'php' : 'json';
+        const format = el.fileFormat.value;
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
@@ -580,15 +609,23 @@
             return `<?php\n\nreturn [\n${body}\n];\n`;
         };
 
-        const dataStr = (fmt === 'php')
-            ? toPhp(obj)
-            : JSON.stringify(obj, null, 2);
+        let dataStr;
+        switch (format) {
+            case 'php':
+                dataStr = toPhp(obj);
+                break;
+            case 'json':
+                dataStr = JSON.stringify(obj, null, 2);
+                break;
+            case 'txt':
+                dataStr = Object.keys(obj).map(k => `${k}: ${obj[k]}`).join('\n');
+                break;
+        }
 
         try {
             if (navigator.clipboard?.writeText) {
                 await navigator.clipboard.writeText(dataStr);
             } else {
-                // fallback
                 const ta = document.createElement('textarea');
                 ta.value = dataStr;
                 ta.style.position = 'fixed';
@@ -641,7 +678,7 @@
             if (file) readFile(file);
         });
 
-        el.btnDownload.addEventListener('click', downloadJSON);
+        el.btnDownload.addEventListener('click', downloadTranslations);
         el.btnSave.addEventListener('click', saveBackend);
         el.btnScanProject.addEventListener('click', scanProject);
         el.btnCopy?.addEventListener('click', copyToClipboard);
@@ -668,7 +705,6 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd+Enter => nova linha
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') addBlankRow();
             if ((e.ctrlKey || e.metaKey) && e.key === 'Delete') {
                 const active = document.activeElement;

@@ -68,18 +68,24 @@ body {
     margin: 0 auto;
 }
 
+#lm-app .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px 0;
+}
+
 /* ---------- Header ---------- */
 h1.h3 {
     font-weight: 800;
     font-size: clamp(20px, 2.2vw, 28px);
-    margin: 0 0 14px 0;
+    margin: 0;
 }
 
 h1.h3::after {
     content: "by Jonas Schen";
     font-size: 12px;
     color: var(--muted);
-    margin-left: 10px;
     font-weight: 500;
 }
 
@@ -93,6 +99,39 @@ h1.h3::after {
 
 .w-half {
     width: 50%;
+}
+
+/* ---------- Text color ---------- */
+.text-primary {
+    color: var(--primary);
+}
+
+.text-primary {
+    color: var(--primary-700);
+}
+
+.text-success {
+    color: var(--success);
+}
+
+.text-success {
+    color: var(--success-700);
+}
+
+.text-yellow {
+    color: var(--yellow);
+}
+
+.text-yellow {
+    color: var(--yellow-700);
+}
+
+.text-warning {
+    color: var(--warning);
+}
+
+.text-danger {
+    color: var(--danger);
 }
 
 /* ---------- Cards ---------- */

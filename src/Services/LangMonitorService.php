@@ -38,6 +38,8 @@ final class LangMonitorService
 
     public function run(bool $returnMissedTranslations, ?array $options = []): array
     {
+        chdir(base_path());
+
         $this->options = $options;
         $this->response = [];
 
@@ -477,5 +479,4 @@ final class LangMonitorService
     {
         return array_merge($this->response, ['success' => true]);
     }
-
 }
