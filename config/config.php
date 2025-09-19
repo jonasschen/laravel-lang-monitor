@@ -11,7 +11,7 @@ return [
     | alert it will be logged in the console
     |
     */
-    'abort_if_directory_doesnt_exists' => false,
+    'abort_if_directory_doesnt_exist' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -23,7 +23,7 @@ return [
     | will be logged in the console
     |
     */
-    'abort_if_lang_file_doesnt_exists' => false,
+    'abort_if_lang_file_doesnt_exist' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -69,7 +69,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | A list of lang files where the package will try to search the
-    | translations keys
+    | translation keys
     |
     */
     'lang_files' => [
@@ -92,11 +92,11 @@ return [
     | Middleware
     |--------------------------------------------------------------------------
     |
-    | Middleware stack wrapping all Lang Monitor routes (default: ['web']).
+    | Middleware stack wrapping all Lang Monitor routes.
     | Adjust to control access to the UI.
     |
     */
-    'middleware' => ['web'], // ajuste conforme necessidade
+    'middleware' => ['web'],
 
     /*
     |--------------------------------------------------------------------------
@@ -105,5 +105,5 @@ return [
     | URL prefix where the Lang Monitor UI will be available.
     | Example: "lang-monitor" → https://your-app.test/lang-monitor
     */
-    'ui_prefix' => 'lang-monitor', // URL base
+    'ui_prefix' => 'lang-monitor',
 ];

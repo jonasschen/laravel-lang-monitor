@@ -92,8 +92,8 @@ final class LangMonitorService
         $this->directoriesToSearch = config('lang-monitor.directories_to_search', []);
         $this->extensionsToSearch = config('lang-monitor.extensions_to_search', []);
         $this->langFiles = config('lang-monitor.lang_files', []);
-        $this->abortIfDirectoryDoesntExists = config('lang-monitor.abort_if_directory_doesnt_exists', false);
-        $this->abortIfLangFileDoesntExists = config('lang-monitor.abort_if_lang_file_doesnt_exists', false);
+        $this->abortIfDirectoryDoesntExists = config('lang-monitor.abort_if_directory_doesnt_exist', false);
+        $this->abortIfLangFileDoesntExists = config('lang-monitor.abort_if_lang_file_doesnt_exist', false);
 
         $this->exportMissedJsonFile = $this->options['export_json_file'] ?? null;
         if (!$this->exportMissedJsonFile) {
