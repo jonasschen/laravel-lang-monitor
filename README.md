@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/lang_monitor_logo.png" alt="Logo" width="200"/>
+    <img src="assets/lang_monitor_logo.png" alt="Logo" height="200"/>
 </p>
 
 # Laravel Lang Monitor
