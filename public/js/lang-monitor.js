@@ -18,7 +18,7 @@
     // -----------------------
     // ELEMENTS
     // -----------------------
-    const el = {
+    const app = {
         table: document.getElementById('translations-table'),
         tbody: null,
         search: document.getElementById('search'),
@@ -44,6 +44,64 @@
         importNotification: document.getElementById('import-notification'),
         toolbarNotification: document.getElementById('toolbar-notification'),
     };
+
+    const Dialog = (() => {
+        const dialog = document.getElementById('confirm-dialog');
+        const elTitle = document.getElementById('modal-title');
+        const elMessage = document.getElementById('modal-message');
+        const btnClose = document.getElementById('btn-dialog-close');
+
+        let lastFocused = null;
+
+        function showModalSafe() {
+            if (!dialog.open) dialog.showModal();
+            document.body.style.overflow = 'hidden';
+        }
+        function closeDialog(value = 'cancel') {
+            if (dialog.open) dialog.close(value);
+        }
+
+        btnClose.addEventListener('click', () => closeDialog('cancel'));
+        dialog.addEventListener('click', (e) => {
+            const r = dialog.getBoundingClientRect();
+            const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            if (!inside) closeDialog('cancel');
+        });
+
+        dialog.addEventListener('close', () => {
+            document.body.style.overflow = '';
+            if (lastFocused) lastFocused.focus();
+        });
+
+        function open({
+            title = 'Confirmar',
+            message = 'Tem certeza?',
+            modalSize = 'md',
+            onConfirm = null,
+            onCancel = null,
+        } = {})
+        {
+            elTitle.textContent = title;
+            elMessage.innerHTML = message;
+            dialog.classList = modalSize;
+
+            lastFocused = document.activeElement;
+            showModalSafe();
+
+            const onClose = () => {
+                dialog.removeEventListener('close', onClose);
+                const returnValue = dialog.returnValue;
+                if (returnValue === 'confirm' && typeof onConfirm === 'function') {
+                    onConfirm();
+                } else if (typeof onCancel === 'function') {
+                    onCancel(returnValue);
+                }
+            };
+            dialog.addEventListener('close', onClose, { once: true });
+        }
+
+        return { open, confirm, close: closeDialog };
+    })();
 
     // -----------------------
     // LOAD / PARSE
@@ -83,8 +141,8 @@
         const arr = [];
         if (map && typeof map === 'object' && !Array.isArray(map)) {
             let i = 0;
-            Object.keys(map).forEach(k=>{
-                arr.push({ id:`row_${Date.now()}_${i++}`, key:String(k), value: map[k]==null?'':String(map[k]) });
+            Object.keys(map).forEach(k=> {
+                arr.push({ id:`row_${Date.now()}_${i++}`, key:String(k), value: map[k] == null ? '' : String(map[k]) });
             });
         } else {
             showImportNotification('Invalid format. Waiting { "key": "value" }.', true);
@@ -203,29 +261,29 @@
         const { dupKeys } = validateRows(state.rows);
         const dups = dupKeys.size;
 
-        if (el.statsMissing) {
-            el.statsMissing.textContent = `Missings: ${missing} / ${total}`;
+        if (app.statsMissing) {
+            app.statsMissing.textContent = `Missing: ${missing} / ${total}`;
             if (missing === 0) {
-                el.statsMissing.style.opacity = '.6';
-                el.statsMissing.classList?.remove('bg-warning','text-dark');
-                el.statsMissing.classList?.add('bg-secondary');
+                app.statsMissing.style.opacity = '.6';
+                app.statsMissing.classList?.remove('bg-warning','text-dark');
+                app.statsMissing.classList?.add('bg-secondary');
             } else {
-                el.statsMissing.style.opacity = '1';
-                el.statsMissing.classList?.remove('bg-secondary');
-                el.statsMissing.classList?.add('bg-warning','text-dark');
+                app.statsMissing.style.opacity = '1';
+                app.statsMissing.classList?.remove('bg-secondary');
+                app.statsMissing.classList?.add('bg-warning','text-dark');
             }
         }
 
-        if (el.statsDup) {
-            el.statsDup.textContent = `Duplicated: ${dups}`;
+        if (app.statsDup) {
+            app.statsDup.textContent = `Duplicated: ${dups}`;
             if (dups === 0) {
-                el.statsDup.style.opacity = '.6';
-                el.statsDup.classList?.remove('bg-danger');
-                el.statsDup.classList?.add('bg-secondary');
+                app.statsDup.style.opacity = '.6';
+                app.statsDup.classList?.remove('bg-danger');
+                app.statsDup.classList?.add('bg-secondary');
             } else {
-                el.statsDup.style.opacity = '1';
-                el.statsDup.classList?.remove('bg-secondary');
-                el.statsDup.classList?.add('bg-danger');
+                app.statsDup.style.opacity = '1';
+                app.statsDup.classList?.remove('bg-secondary');
+                app.statsDup.classList?.add('bg-danger');
             }
         }
     }
@@ -234,9 +292,9 @@
     // FILTER
     // -----------------------
     function applyFilters() {
-        const q = (el.search?.value || '').toLowerCase();
-        const missingOnly = !!el.missingOnly?.checked;
-        const dupOnly     = !!el.dupOnly?.checked;
+        const q = (app.search?.value || '').toLowerCase();
+        const missingOnly = !!app.missingOnly?.checked;
+        const dupOnly     = !!app.dupOnly?.checked;
 
         recomputeValidation();
 
@@ -291,16 +349,16 @@
     }
 
     function updatePager() {
-        el.pageInfo.textContent = `Page ${state.page} of ${totalPages()}`;
-        el.btnPrev.disabled = state.page <= 1;
-        el.btnNext.disabled = state.page >= totalPages();
+        app.pageInfo.textContent = `Page ${state.page} of ${totalPages()}`;
+        app.btnPrev.disabled = state.page <= 1;
+        app.btnNext.disabled = state.page >= totalPages();
     }
 
     function goToPage(p) {
         state.page = clampPage(p);
         renderBody();
         updatePager();
-        const scrollBox = el.table?.parentElement;
+        const scrollBox = app.table?.parentElement;
         if (scrollBox?.scrollTo) scrollBox.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -320,13 +378,13 @@
     }
 
     function renderBody() {
-        if (!el.tbody) {
-            el.tbody = el.table?.querySelector('tbody');
+        if (!app.tbody) {
+            app.tbody = app.table?.querySelector('tbody');
         }
 
-        if (!el.tbody) return;
+        if (!app.tbody) return;
 
-        el.tbody.innerHTML = '';
+        app.tbody.innerHTML = '';
 
         recomputeValidation();
 
@@ -364,7 +422,7 @@
             keyInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    const inputs = el.tbody.querySelectorAll('input, textarea');
+                    const inputs = app.tbody.querySelectorAll('input, textarea');
                     const i = Array.prototype.indexOf.call(inputs, e.currentTarget);
                     if (i >= 0 && i + 1 < inputs.length) inputs[i + 1].focus();
                 }
@@ -396,7 +454,7 @@
             valInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    const inputs = el.tbody.querySelectorAll('input, textarea');
+                    const inputs = app.tbody.querySelectorAll('input, textarea');
                     const i = Array.prototype.indexOf.call(inputs, e.currentTarget);
                     if (i >= 0 && i + 1 < inputs.length) inputs[i + 1].focus();
                 }
@@ -424,13 +482,19 @@
             delBtn.append(delIcon, ' Remove');
             delBtn.addEventListener('click', (e) => {
                 const rid = e.currentTarget.dataset.id;
-                if (confirm('Remove this line?')) removeRowById(rid);
+                Dialog.open({
+                    title: 'Remove line',
+                    message: 'Are you sure you want to remove this line?',
+                    onConfirm: () => {
+                        removeRowById(rid)
+                    },
+                });
             });
 
             tdActions.appendChild(delBtn);
             tr.appendChild(tdActions);
 
-            el.tbody.appendChild(tr);
+            app.tbody.appendChild(tr);
 
             autoResizeRow(tr);
         });
@@ -492,6 +556,21 @@
         this.style.display = 'none';
     }
 
+    function openLog(log) {
+        let message = '<pre>';
+        log.forEach(l => {
+            message += `<div class="log-line ${l.type}">${l.message}</div>`;
+        });
+        message += '</pre>';
+
+        Dialog.open({
+            title: 'Scanning log',
+            message: message,
+            modalSize: 'lg',
+        });
+
+    }
+
     // -----------------------
     // EXPORT / SAVE
     // -----------------------
@@ -503,7 +582,7 @@
             return;
         }
 
-        const format = el.fileFormat?.value;
+        const format = app.fileFormat?.value;
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
@@ -552,7 +631,7 @@
             return;
         }
 
-        const format = el.fileFormat?.value;
+        const format = app.fileFormat?.value;
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
@@ -583,10 +662,22 @@
     }
 
     async function scanProject() {
-        if (state.rows.length > 0 && !confirm('Are you sure you want to scan the project and lose unsaved translations?')) {
+        if (state.rows.length === 0) {
+            await callScanProject();
+
             return;
         }
 
+        Dialog.open({
+            title: 'Scan project',
+            message: 'Are you sure you want to scan the project and lose unsaved translations?',
+            onConfirm: async () => {
+                await callScanProject();
+            },
+        });
+    }
+
+    async function callScanProject() {
         const res = await fetch(window.LANG_MONITOR_SCAN_PROJECT, {
             method: 'POST',
             headers: {
@@ -607,7 +698,13 @@
 
             importFromText(missedKeys);
 
-            showToolbarNotification('Project successfully scanned!');
+            await showToolbarNotification(`<span>Project successfully scanned!</span> <span><a href="#" id="btn-see-log">Click here</a> to see the scanning log.</span>`);
+            const btnSeeLog = document.getElementById('btn-see-log');
+            btnSeeLog.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openLog(jsonData.log);
+            });
 
             return;
         }
@@ -624,7 +721,7 @@
             return;
         }
 
-        const format = el.fileFormat.value;
+        const format = app.fileFormat.value;
         const obj = {};
         state.rows.forEach(r => { obj[(r.key || '').trim()] = r.value || ''; });
 
@@ -673,60 +770,61 @@
     // WIRE UI
     // -----------------------
     function wireUI() {
-        el.search.addEventListener('input', applyFilters);
-        el.missingOnly.addEventListener('change', applyFilters);
-        el.dupOnly && el.dupOnly.addEventListener('change', applyFilters);
+        app.search.addEventListener('input', applyFilters);
+        app.missingOnly.addEventListener('change', applyFilters);
+        app.dupOnly && app.dupOnly.addEventListener('change', applyFilters);
 
-        if (el.dropzone) {
+        if (app.dropzone) {
             ['dragenter','dragover'].forEach(evt => {
-                el.dropzone.addEventListener(evt, e => {
-                    el.dropzone.classList.add('is-dragover');
+                app.dropzone.addEventListener(evt, e => {
+                    app.dropzone.classList.add('is-dragover');
                     e.preventDefault();
                     e.stopPropagation();
                 });
             });
 
             ['dragleave','drop'].forEach(evt => {
-                el.dropzone.addEventListener(evt, e => {
-                    el.dropzone.classList.remove('is-dragover');
+                app.dropzone.addEventListener(evt, e => {
+                    app.dropzone.classList.remove('is-dragover');
                     e.preventDefault();
                     e.stopPropagation();
                 });
             });
-            el.dropzone.addEventListener('drop', e => {
-                el.dropzone.classList.remove('is-dragover');
+            app.dropzone.addEventListener('drop', e => {
+                app.dropzone.classList.remove('is-dragover');
                 const file = e.dataTransfer.files?.[0];
                 if (file) readFile(file);
             });
         }
 
-        el.fileInput.addEventListener('change', () => {
-            const file = el.fileInput.files?.[0];
+        app.fileInput.addEventListener('change', () => {
+            const file = app.fileInput.files?.[0];
             if (file) readFile(file);
         });
 
-        el.btnDownload.addEventListener('click', downloadTranslations);
-        el.btnSave.addEventListener('click', saveBackend);
-        el.btnScanProject.addEventListener('click', scanProject);
-        el.btnCopy?.addEventListener('click', copyToClipboard);
-        el.btnAddRow.addEventListener('click', addBlankRow);
-        el.btnSort.addEventListener('click', sortByKeyAsc);
-        el.btnClearAll.addEventListener('click', clearAll);
-        el.exportNotification.addEventListener('click', closeNotification);
-        el.importNotification.addEventListener('click', closeNotification);
-        el.toolbarNotification.addEventListener('click', closeNotification);
+        app.btnDownload.addEventListener('click', downloadTranslations);
+        app.btnSave.addEventListener('click', saveBackend);
+        app.btnScanProject.addEventListener('click', scanProject);
+        app.btnCopy?.addEventListener('click', copyToClipboard);
+        app.btnAddRow.addEventListener('click', addBlankRow);
+        app.btnSort.addEventListener('click', sortByKeyAsc);
+        app.btnClearAll.addEventListener('click', clearAll);
+        app.exportNotification.addEventListener('click', closeNotification);
+        app.importNotification.addEventListener('click', closeNotification);
+        app.toolbarNotification.addEventListener('click', closeNotification);
 
-        el.btnPrev.addEventListener('click', () => goToPage(state.page - 1));
-        el.btnNext.addEventListener('click', () => goToPage(state.page + 1));
-        el.pageSizeSel.addEventListener('change', () => {
-            const n = parseInt(el.pageSizeSel.value, 10) || 50;
+        app.btnPrev.addEventListener('click', () => goToPage(state.page - 1));
+        app.btnNext.addEventListener('click', () => goToPage(state.page + 1));
+
+        app.pageSizeSel.addEventListener('change', () => {
+            const n = parseInt(app.pageSizeSel.value, 10) || 50;
             state.pageSize = n;
             state.page = 1;
             renderBody();
             updatePager();
         });
 
-        el.dropzone?.addEventListener('paste', (e)=>{
+        app.dropzone?.addEventListener('paste', (e)=> {
             const text = e.clipboardData?.getData('text') || '';
             if (text.trim()) {
                 e.preventDefault();
@@ -791,8 +889,8 @@
     // INIT
     // -----------------------
     function init() {
-        if (el.pageSizeSel) {
-            const n = parseInt(el.pageSizeSel.value, 10);
+        if (app.pageSizeSel) {
+            const n = parseInt(app.pageSizeSel.value, 10);
             if (!isNaN(n)) state.pageSize = n;
         }
         wireUI();
@@ -803,5 +901,7 @@
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
-    } else { init(); }
+    } else {
+        init();
+    }
 })();

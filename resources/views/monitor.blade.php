@@ -2,8 +2,9 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Lang Monitor UI - by Jonas Schen</title>
+        <title>Laravel Lang Monitor UI - by Jonas Schen</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="{{ asset('vendor/lang-monitor/ico/lang_monitor.ico') }}">
         <link rel="stylesheet" href="{{ asset('vendor/lang-monitor/css/lang-monitor.css') }}">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add_row_below,backup_table,delete_forever,download,keyboard_arrow_left,keyboard_arrow_right,plagiarism,save,sort_by_alpha,variable_remove" />
     </head>
@@ -12,7 +13,7 @@
             <div class="header">
                 <img src="{{ asset('vendor/lang-monitor/images/lang_monitor_logo_small.png') }}" alt="Lang Monitor Logo" width="32" height="32" class="me-2">
                 <h1 class="h3">
-                    Lang Monitor UI
+                    Laravel Lang Monitor UI
                 </h1>
             </div>
 
@@ -157,6 +158,23 @@
                 </button>
             </div>
         </div>
+
+        <dialog id="confirm-dialog" aria-labelledby="modal-title" aria-describedby="modal-message">
+            <form method="dialog" class="modal-card">
+                <header class="modal-header">
+                    <h2 id="modal-title"></h2>
+                    <button type="button" class="btn btn-secondary btn-modal-close" aria-label="Close" id="btn-dialog-close">✕</button>
+                </header>
+
+                <div class="modal-body" id="modal-message">
+                </div>
+
+                <footer class="modal-footer">
+                    <button value="cancel" class="btn btn-secondary">Cancel</button>
+                    <button value="confirm" class="btn btn-primary">Confirm</button>
+                </footer>
+            </form>
+        </dialog>
 
         <script src="{{asset('vendor/lang-monitor/js/lang-monitor.js')}}"></script>
         <script>
