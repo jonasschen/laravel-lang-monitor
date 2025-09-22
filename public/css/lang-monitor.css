@@ -59,6 +59,7 @@ body {
     color: var(--text);
     font: 15px/1.45 var(--font);
     letter-spacing: .2px;
+    background-repeat: no-repeat;
 }
 
 /* container */
