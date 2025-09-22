@@ -61,6 +61,9 @@ You can access the Lang Monitor UI by going to the URL below:
 http://your-app.test/lang-monitor
 ```
 You can customize the URL prefix by changing the "ui_prefix" option in the config file **"/config/lang-monitor.php"**.
+<p>
+<img src="assets/ui_version_screenshot.png" alt="Lang Monitor UI" width="500px" />
+</p>
 
 ## Usage via prompt
 Use the command below, it is that easy!
