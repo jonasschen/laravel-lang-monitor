@@ -2,6 +2,12 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 3.0.0 - 2025-09-22
+
+-   New UI Version
+-   New configuration properties: 'middleware' and 'ui_prefix'
+-   Laravel updated to version 12.30.1
+
 ## 2.2.0 - 2025-03-05
 
 -   Laravel updated to version 11.44.1
@@ -9,7 +15,7 @@ All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in t
  
 ## 2.1.0 - 2024-07-22
 
--   New configuration property: scan_for_unused_translations
+-   New configuration property: 'scan_for_unused_translations'
 -   New report screen
 -   New option to export unused keys
 -   New export file type: (text)
