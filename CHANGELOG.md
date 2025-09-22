@@ -6,7 +6,6 @@ All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in t
 
 -   New UI Version
 -   New configuration properties: 'middleware' and 'ui_prefix'
--   Laravel updated to version 12.30.1
 
 ## 2.2.0 - 2025-03-05
 
