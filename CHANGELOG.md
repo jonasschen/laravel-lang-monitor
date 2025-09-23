@@ -2,7 +2,11 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
-## 3.0.0 - 2025-09-22
+## 3.0.2 - 2025-09-22
+
+-   BUG FIX: Removed useless logs
+
+## 3.0.1 - 2025-09-22
 
 -   New UI Version
 -   New configuration properties: 'middleware' and 'ui_prefix'

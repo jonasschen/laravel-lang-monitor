@@ -378,12 +378,6 @@ final class LangMonitorService
                         if (!$found) {
                             $keysNotFound[] = $match;
 
-                            $string = "Key not found: [$match] - Used in file [$file:$lineNumber]";
-                            info('$response', [$this->response]);
-                            info('$type', ['line']);
-                            info('$string', [$string]);
-                            info('**********************');
-
                             $this->responseLog(ResponseLogEnum::LINE, "Key not found: [$match] - Used in file [$file:$lineNumber]");
                         }
                     }
