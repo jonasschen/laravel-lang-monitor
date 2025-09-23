@@ -4,7 +4,7 @@ use Jonasschen\LaravelLangMonitor\Http\Controllers\TranslationMonitorController;
 
 
 Route::middleware(config('lang-monitor.middleware', ['web']))
-    ->prefix(config('lang-monitor.ui_prefix', 'lang-monitor'))
+    ->prefix(config('lang-monitor.ui_path', 'lang-monitor'))
     ->group(function () {
         Route::get('/', [TranslationMonitorController::class, 'index'])->name('lang-monitor.index');
         Route::post('/scan', [TranslationMonitorController::class, 'scan'])->name('lang-monitor.scan');

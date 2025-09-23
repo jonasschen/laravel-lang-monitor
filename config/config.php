@@ -100,10 +100,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | UI Prefix
+    | UI Path
     |--------------------------------------------------------------------------
-    | URL prefix where the Lang Monitor UI will be available.
+    | URL path where the Lang Monitor UI will be available.
     | Example: "lang-monitor" → https://your-app.test/lang-monitor
     */
-    'ui_prefix' => 'lang-monitor',
+    'ui_path' => 'lang-monitor',
 ];

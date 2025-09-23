@@ -52,15 +52,15 @@ This command will publish the following files:
     - Locale: The locale of the main project language. It will be used to perform an improved sorting of the untranslated keys when exporting a result;
 - middleware (Default: ['web'])
     - Middleware: Middleware stack wrapping all Lang Monitor routes. Adjust to control access to the UI.
-- ui_prefix (Default: lang-monitor)
-    - UI prefix: URL prefix where the Lang Monitor UI will be available. Example: "lang-monitor" → https://your-app.test/lang-monitor;
+- ui_path (Default: lang-monitor)
+    - UI path: URL path where the Lang Monitor UI will be available. Example: "lang-monitor" → https://your-app.test/lang-monitor;
 
 ## Usage via browser
 You can access the Lang Monitor UI by going to the URL below:
 ```
 http://your-app.test/lang-monitor
 ```
-You can customize the URL prefix by changing the "ui_prefix" option in the config file **"/config/lang-monitor.php"**.
+You can customize the URL path by changing the "ui_path" option in the config file **"/config/lang-monitor.php"**.
 <p>
 <img src="assets/ui_version_screenshot.png" alt="Lang Monitor UI" width="500px" />
 </p>
@@ -129,13 +129,27 @@ You can export unused keys result for a file in a text format. Use the --export_
 php artisan lang_monitor:scan --export_unused_txt_file=storage/logs/unuseds.txt
 ```
 
-### Translation function support
+## Upgrade guide
+### From version 2.x to 3.x
+- You will need to publish the config file again to publish the new asset and view files;  
+```bash
+php artisan vendor:publish --provider="Jonasschen\LaravelLangMonitor\LaravelLangMonitorServiceProvider"
+```
+- The "middleware" configuration option has been added, and its default value is "['web']". If you want to change this behavior, you will need to manually add the option to the configuration file: "/config/lang_monitor.php";
+- The "ui_path" configuration option has been added, and its default value is "lang-monitor". If you want to change this behavior, you will need to manually add the option to the configuration file: "/config/lang_monitor.php"; 
+- The "abort_if_directory_doesnt_exists" config option has been renamed to "abort_if_directory_doesnt_exist", and its default value is "false". If you don't manually rename it in your config file, this will be the new behavior;
+- The "abort_if_lang_file_doesnt_exists" config option has been renamed to "abort_if_lang_file_doesnt_exist", and its default value is "false". If you don't manually rename it in your config file, this will be the new behavior;
+
+### From version 2.0.x to 2.1.x
+- The "scan_for_unused_translations" configuration option has been added. Its default value is "false". If you want to change this behavior, you will need to manually add the option to the configuration file: "/config/lang_monitor.php";
+
+## Translation function support
 This package supports @lang(), __() and trans() functions.
 
-### Lang file format support
+## Lang file format support
 This package supports .php files and .json files formats.
 
-### Consider Sponsoring
+## Consider Sponsoring
 Help me maintain this project, please consider looking at the [FUNDING](./.github/FUNDING.yml) file for more info.
 
 <a href="https://bmc.link/jonasschen" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>

@@ -2,14 +2,14 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
-## 3.0.2 - 2025-09-22
-
--   BUG FIX: Removed useless logs
-
-## 3.0.1 - 2025-09-22
+## 3.0.3 - 2025-09-23
 
 -   New UI Version
--   New configuration properties: 'middleware' and 'ui_prefix'
+-   New configuration properties: 'middleware' and 'ui_path'
+-   The "abort_if_directory_doesnt_exists" config option has been renamed to "abort_if_directory_doesnt_exist"
+-   The "abort_if_lang_file_doesnt_exists" config option has been renamed to "abort_if_lang_file_doesnt_exist"
+-   The "middleware" config option has been added
+-   The "ui_path" config option has been added
 
 ## 2.2.0 - 2025-03-05
 
