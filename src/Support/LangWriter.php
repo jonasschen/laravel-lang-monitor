@@ -1,11 +1,12 @@
 <?php
+
 namespace Jonasschen\LaravelLangMonitor\Support;
 
 class LangWriter
 {
     public function __construct(
         protected string $langBasePath,
-        protected string $targetLocale = 'pt-BR'
+        protected string $targetLocale = 'pt-BR',
     ) {}
 
     /**
@@ -19,11 +20,13 @@ class LangWriter
             : [];
 
         foreach ($map as $key => $value) {
-            $current[$key] = (string)($value ?? '');
+            $current[$key] = (string) ($value ?? '');
         }
 
         ksort($current);
-        if (! is_dir(dirname($file))) mkdir(dirname($file), 0775, true);
-        file_put_contents($file, json_encode($current, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
+        if (!is_dir(dirname($file))) {
+            mkdir(dirname($file), 0o775, true);
+        }
+        file_put_contents($file, json_encode($current, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 }

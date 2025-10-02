@@ -12,8 +12,8 @@ class LaravelLangMonitorServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__.'/../routes/lang-monitor.php');
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'lang-monitor');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/lang-monitor.php');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'lang-monitor');
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
@@ -21,12 +21,11 @@ class LaravelLangMonitorServiceProvider extends ServiceProvider
             ], 'config');
 
             $this->publishes([
-                __DIR__.'/../public' => public_path('vendor/lang-monitor'),
+                __DIR__ . '/../public' => public_path('vendor/lang-monitor'),
             ], 'lang-monitor-assets');
 
-
             $this->publishes([
-                __DIR__.'/../resources/views' => resource_path('views/vendor/lang-monitor'),
+                __DIR__ . '/../resources/views' => resource_path('views/vendor/lang-monitor'),
             ], 'lang-monitor-views');
 
             // Registering package commands.

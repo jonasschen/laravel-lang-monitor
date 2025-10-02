@@ -1,17 +1,17 @@
 <?php
+
 namespace Jonasschen\LaravelLangMonitor\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Http\JsonResponse;
 use Jonasschen\LaravelLangMonitor\Services\LangMonitorService;
 
 final class TranslationMonitorController extends Controller
 {
     public function __construct(
         private LangMonitorService $langMonitorService,
-    ) {
-    }
+    ) {}
 
     public function index()
     {
@@ -31,7 +31,7 @@ final class TranslationMonitorController extends Controller
         $format = $payload['format'];
 
         $baseDir = storage_path('app/lang-monitor');
-        if (!is_dir($baseDir) && !mkdir($baseDir, 0775, true) && !is_dir($baseDir)) {
+        if (!is_dir($baseDir) && !mkdir($baseDir, 0o775, true) && !is_dir($baseDir)) {
             return response()->json(['message' => 'Failed to create destination directory.'], 500);
         }
 
@@ -44,26 +44,26 @@ final class TranslationMonitorController extends Controller
                 $content = "<?php\n\nreturn [\n";
                 ksort($map);
                 foreach ($map as $key => $value) {
-                    $key = str_replace(["\\", "'"], ["\\\\", "\\'"], (string)$key);
-                    $value = str_replace(["\\", "'"], ["\\\\", "\\'"], (string)($value ?? ''));
+                    $key = str_replace(['\\', "'"], ['\\\\', "\\'"], (string) $key);
+                    $value = str_replace(['\\', "'"], ['\\\\', "\\'"], (string) ($value ?? ''));
                     $content .= "    '{$key}' => '{$value}',\n";
                 }
                 $content .= "];\n";
                 break;
             case 'json':
-                $content = json_encode($map, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+                $content = json_encode($map, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                 break;
             case 'txt':
                 foreach ($map as $key => $value) {
-                    $key = str_replace(["\\", "'"], ["\\\\", "\\'"], (string)$key);
-                    $value = str_replace(["\\", "'"], ["\\\\", "\\'"], (string)($value ?? ''));
+                    $key = str_replace(['\\', "'"], ['\\\\', "\\'"], (string) $key);
+                    $value = str_replace(['\\', "'"], ['\\\\', "\\'"], (string) ($value ?? ''));
                     $content .= "{$key}: {$value}\n";
                 }
 
                 break;
         }
 
-        if (!$content || file_put_contents($path, $content) === false) {
+        if (!$content || false === file_put_contents($path, $content)) {
             return response()->json(['message' => 'Failed to write file.'], 500);
         }
 

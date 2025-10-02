@@ -32,9 +32,7 @@ final class LangMonitorService
     private ?string $exportUnusedPhpFile;
     private ?string $exportUnusedTxtFile;
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function run(bool $returnMissedTranslations, ?array $options = []): array
     {
@@ -67,13 +65,13 @@ final class LangMonitorService
         } else {
             if ($missingDirectoriesToSearch) {
                 foreach ($missingDirectoriesToSearch as $directory) {
-                    $this->responseLog(ResponseLogEnum::ALERT, "Directory [$directory] does not exist and it was ignored.");
+                    $this->responseLog(ResponseLogEnum::ALERT, "Directory [{$directory}] does not exist and it was ignored.");
                 }
             }
 
             if ($missingLangFiles) {
                 foreach ($missingLangFiles as $langFile) {
-                    $this->responseLog(ResponseLogEnum::ALERT, "Lang file [$langFile] does not exist and it was ignored.");
+                    $this->responseLog(ResponseLogEnum::ALERT, "Lang file [{$langFile}] does not exist and it was ignored.");
                 }
             }
 
@@ -119,7 +117,7 @@ final class LangMonitorService
         foreach ($this->langFiles as $langFile) {
             if (!file_exists($langFile)) {
                 if ($this->abortIfLangFileDoesntExists) {
-                    $this->responseLog(ResponseLogEnum::ERROR, "Lang file [$langFile] does not exist.");
+                    $this->responseLog(ResponseLogEnum::ERROR, "Lang file [{$langFile}] does not exist.");
 
                     return null;
                 }
@@ -139,7 +137,7 @@ final class LangMonitorService
         foreach ($this->directoriesToSearch as $directory) {
             if (!file_exists($directory)) {
                 if ($this->abortIfDirectoryDoesntExists) {
-                    $this->responseLog(ResponseLogEnum::ERROR, "Directory [$directory] does not exist.");
+                    $this->responseLog(ResponseLogEnum::ERROR, "Directory [{$directory}] does not exist.");
 
                     return null;
                 }
@@ -162,7 +160,7 @@ final class LangMonitorService
     {
         setlocale(LC_ALL, config('lang-monitor.locale', ''));
 
-        usort($array, function($a, $b) {
+        usort($array, function ($a, $b) {
             return strcmp($a['key'], $b['key']);
         });
 
@@ -213,7 +211,7 @@ final class LangMonitorService
             fwrite($myFile, "\n}\n");
             fclose($myFile);
 
-            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [$this->exportMissedJsonFile] as JSON file.\n");
+            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [{$this->exportMissedJsonFile}] as JSON file.\n");
         }
     }
 
@@ -234,7 +232,7 @@ final class LangMonitorService
             fwrite($myFile, "\n}\n");
             fclose($myFile);
 
-            $this->responseLog(ResponseLogEnum::INFO, "Unused keys exported to [$this->exportUnusedJsonFile] as JSON file.\n");
+            $this->responseLog(ResponseLogEnum::INFO, "Unused keys exported to [{$this->exportUnusedJsonFile}] as JSON file.\n");
         }
     }
 
@@ -250,7 +248,7 @@ final class LangMonitorService
             fwrite($myFile, "];\n");
             fclose($myFile);
 
-            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [$this->exportMissedPhpFile] as PHP file.\n");
+            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [{$this->exportMissedPhpFile}] as PHP file.\n");
         }
     }
 
@@ -266,7 +264,7 @@ final class LangMonitorService
             fwrite($myFile, "];\n");
             fclose($myFile);
 
-            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [$this->exportUnusedPhpFile] as PHP file.\n");
+            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [{$this->exportUnusedPhpFile}] as PHP file.\n");
         }
     }
 
@@ -280,7 +278,7 @@ final class LangMonitorService
             }
             fclose($myFile);
 
-            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [$this->exportMissedTxtFile] as text file.\n");
+            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [{$this->exportMissedTxtFile}] as text file.\n");
         }
     }
 
@@ -294,7 +292,7 @@ final class LangMonitorService
             }
             fclose($myFile);
 
-            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [$this->exportUnusedTxtFile] as text file.\n");
+            $this->responseLog(ResponseLogEnum::INFO, "Untranslated keys exported to [{$this->exportUnusedTxtFile}] as text file.\n");
         }
     }
 
@@ -378,7 +376,7 @@ final class LangMonitorService
                         if (!$found) {
                             $keysNotFound[] = $match;
 
-                            $this->responseLog(ResponseLogEnum::LINE, "Key not found: [$match] - Used in file [$file:$lineNumber]");
+                            $this->responseLog(ResponseLogEnum::LINE, "Key not found: [{$match}] - Used in file [{$file}:{$lineNumber}]");
                         }
                     }
                 }
@@ -447,7 +445,7 @@ final class LangMonitorService
     private function writeLn(string $string): void
     {
         $length = Str::length(strip_tags($string));
-        $spaces = str_repeat(' ', (37 - $length));
+        $spaces = str_repeat(' ', 37 - $length);
         $this->responseLog(ResponseLogEnum::COMMENT, '* ' . $string . $spaces . '*');
     }
 
@@ -464,12 +462,12 @@ final class LangMonitorService
         }
     }
 
-    private function returnError():array
+    private function returnError(): array
     {
         return array_merge($this->response, ['success' => false]);
     }
 
-    private function returnSuccess():array
+    private function returnSuccess(): array
     {
         return array_merge($this->response, ['success' => true]);
     }

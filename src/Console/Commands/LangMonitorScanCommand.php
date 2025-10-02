@@ -12,8 +12,8 @@ final class LangMonitorScanCommand extends Command
     protected $description = 'Searches for all @lang(), __() and trans() keys in all configured files and check if them exists in the configured lang files.';
 
     public function __construct(
-        private readonly LangMonitorService $langMonitorService)
-    {
+        private readonly LangMonitorService $langMonitorService,
+    ) {
         parent::__construct();
     }
 
@@ -27,6 +27,6 @@ final class LangMonitorScanCommand extends Command
             }
         }
 
-        return ($response['success']?'0':'1');
+        return $response['success'] ? '0' : '1';
     }
 }
