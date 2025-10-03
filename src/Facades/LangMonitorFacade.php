@@ -1,10 +1,10 @@
 <?php
 
-namespace Jonasschen\LaravelLangMonitor;
+namespace Jonasschen\LaravelLangMonitor\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class LaravelLangMonitorFacade extends Facade
+class LangMonitorFacade extends Facade
 {
     /**
      * Get the registered name of the component.

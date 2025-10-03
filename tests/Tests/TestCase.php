@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Jonasschen\LaravelLangMonitor\LaravelLangMonitorServiceProvider;
+use Jonasschen\LaravelLangMonitor\Providers\LangMonitorServiceProvider;
 
 /**
  * @internal
@@ -21,7 +21,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [
-            LaravelLangMonitorServiceProvider::class,
+            LangMonitorServiceProvider::class,
         ];
     }
 

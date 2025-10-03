@@ -55,10 +55,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Jonasschen\\LaravelLangMonitor\\LaravelLangMonitorServiceProvider"
+                "Jonasschen\\LaravelLangMonitor\\Providers\\LangMonitorServiceProvider"
             ],
             "aliases": {
-                "LaravelLangMonitor": "Jonasschen\\LaravelLangMonitor\\LaravelLangMonitorFacade"
+                "LaravelLangMonitor": "Jonasschen\\LaravelLangMonitor\\Facades\\LangMonitorFacade"
             }
         }
     }

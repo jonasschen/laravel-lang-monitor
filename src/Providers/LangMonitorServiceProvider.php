@@ -1,31 +1,33 @@
 <?php
 
-namespace Jonasschen\LaravelLangMonitor;
+namespace Jonasschen\LaravelLangMonitor\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Jonasschen\LaravelLangMonitor\Console\Commands\LangMonitorScanCommand;
+use Jonasschen\LaravelLangMonitor\LaravelLangMonitor;
 
-class LaravelLangMonitorServiceProvider extends ServiceProvider
+class LangMonitorServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
      */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/lang-monitor.php');
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'lang-monitor');
+        $baseDir = __DIR__ . '/../../';
+        $this->loadRoutesFrom($baseDir . 'routes/lang-monitor.php');
+        $this->loadViewsFrom($baseDir . 'resources/views', 'lang-monitor');
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/config.php' => config_path('lang-monitor.php'),
-            ], 'config');
+                $baseDir . 'config/config.php' => config_path('lang-monitor.php'),
+            ], 'lang-monitor-config');
 
             $this->publishes([
-                __DIR__ . '/../public' => public_path('vendor/lang-monitor'),
+                $baseDir . 'public' => public_path('vendor/lang-monitor'),
             ], 'lang-monitor-assets');
 
             $this->publishes([
-                __DIR__ . '/../resources/views' => resource_path('views/vendor/lang-monitor'),
+                $baseDir . 'resources/views' => resource_path('views/vendor/lang-monitor'),
             ], 'lang-monitor-views');
 
             // Registering package commands.
@@ -40,8 +42,10 @@ class LaravelLangMonitorServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $baseDir = __DIR__ . '/../../';
+
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'lang-monitor');
+        $this->mergeConfigFrom($baseDir . 'config/config.php', 'lang-monitor');
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-lang-monitor', function () {

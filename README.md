@@ -25,7 +25,7 @@ composer require jonasschen/laravel-lang-monitor --dev
 
 Publish the config, asset and view files using the artisan CLI tool:
 ```bash
-php artisan vendor:publish --provider="Jonasschen\LaravelLangMonitor\LaravelLangMonitorServiceProvider"
+php artisan vendor:publish --provider="Jonasschen\LaravelLangMonitor\Providers\LangMonitorServiceProvider"
 ```
 This command will publish the following files:
 - config/lang-monitor.php
@@ -36,24 +36,59 @@ This command will publish the following files:
 - resources/views/vendor/lang-monitor/monitor.blade.php
 
 ### Available configurations
-- abort_if_directory_doesnt_exist (Default: false)
-    - Abort if a directory doesn't exist: If any configured directories of the "directories_to_search" array do not exist, the scanning process will be aborted, otherwise only an alert it will be logged in the console; 
-- abort_if_lang_file_doesnt_exist (Default: false)
-    - Abort if a lang file doesn't exist: If any configured lang files of the "lang_files" array do not exist, the scanning process will be aborted, otherwise only an alert it will be logged in the console;
-- scan_for_unused_translations (Default: true)
-    - If enabled, will check if all key translations are in use and log unused keys;
-- directories_to_search (Default: ['app', 'resources/views'])
-    - Directories to search: A list of directories where the package will perform the scanning process;
-- extensions_to_search (Default: ['php', 'js'])
-    - Extensions to search: A list of file extensions that the package will consider to perform the scanning process;
-- lang_files (Default: ['resources/lang/en.json'])
-    - Lang files: A list of lang files where the package will try to search the translation keys;
-- locale (Default en.utf8)
-    - Locale: The locale of the main project language. It will be used to perform an improved sorting of the untranslated keys when exporting a result;
-- middleware (Default: ['web'])
-    - Middleware: Middleware stack wrapping all Lang Monitor routes. Adjust to control access to the UI.
-- ui_path (Default: lang-monitor)
-    - UI path: URL path where the Lang Monitor UI will be available. Example: "lang-monitor" → https://your-app.test/lang-monitor;
+- abort_if_directory_doesnt_exist: If any configured directories of the "directories_to_search" array do not exist, the scanning process will be aborted, otherwise only an alert it will be logged in the console; 
+    - Default Value:
+    ```php
+    'abort_if_directory_doesnt_exist' => false,
+    ````
+- abort_if_lang_file_doesnt_exist: If any configured lang files of the "lang_files" array do not exist, the scanning process will be aborted, otherwise only an alert it will be logged in the console;
+    - Default Value:
+    ```php
+    'abort_if_lang_file_doesnt_exist' => false,
+    ````
+- scan_for_unused_translations: If enabled, will check if all key translations are in use and log unused keys;
+    - Default Value:
+    ```php
+    'scan_for_unused_translations' => true,
+    ````
+- directories_to_search: A list of directories where the package will perform the scanning process;
+    - Default Value:
+    ```php
+    'directories_to_search' => [
+        'app', 
+        'resources/views',
+    ],
+    ```` 
+- extensions_to_search: A list of file extensions that the package will consider to perform the scanning process;
+    - Default Value:
+    ```php
+    'extensions_to_search' => [
+        'php', 
+        'js',
+    ],
+    ````
+- lang_files: A list of lang files where the package will try to search the translation keys;
+    - Default Value:
+    ```php
+    'extensions_to_search' => [
+        'resources/lang/en.json', 
+    ],
+    ````
+- locale: The locale of the main project language. It will be used to perform an improved sorting of the untranslated keys when exporting a result;
+    - Default Value:
+    ```php
+    'locale' => 'en.utf8',
+    ````
+- middleware: Middleware stack wrapping all Lang Monitor routes. Adjust to control access to the UI.
+    - Default Value:
+    ```php
+    'middleware' => ['web'],
+    ````
+- ui_path: URL path where the Lang Monitor UI will be available. Example: "lang-monitor" → https://your-app.test/lang-monitor;
+    - Default Value:
+    ```php
+    'ui_path' => 'lang-monitor',
+    ````
 
 ## Usage via browser
 You can access the Lang Monitor UI by going to the URL below:
@@ -133,7 +168,7 @@ php artisan lang_monitor:scan --export_unused_txt_file=storage/logs/unuseds.txt
 ### From version 2.x to 3.x
 - You will need to publish the config file again to publish the new asset and view files;  
 ```bash
-php artisan vendor:publish --provider="Jonasschen\LaravelLangMonitor\LaravelLangMonitorServiceProvider"
+php artisan vendor:publish --provider="Jonasschen\LaravelLangMonitor\Providers\LangMonitorServiceProvider"
 ```
 - The "middleware" configuration option has been added, and its default value is "['web']". If you want to change this behavior, you will need to manually add the option to the configuration file: "/config/lang_monitor.php";
 - The "ui_path" configuration option has been added, and its default value is "lang-monitor". If you want to change this behavior, you will need to manually add the option to the configuration file: "/config/lang_monitor.php"; 
