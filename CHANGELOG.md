@@ -2,6 +2,11 @@
 
 All Notable changes to `jonasschen/laravel-lang-monitor` will be documented in this file
 
+## 5.0.0 - 2026-09-10
+
+-   Compatibility to Laravel 13
+-   Test matrix expanded to PHP 8.3/8.4 and Laravel 11/12/13
+
 ## 4.0.0 - 2025-10-06
 
 -   Compatibility to Laravel 12
